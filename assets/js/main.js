@@ -106,16 +106,29 @@
                 
                 if (isOpen) {
                     console.log('🍔 Closing menu...');
-                    mobileNav.classList.remove('menu-visible', 'open'); // Remove both
-                    overlay.classList.remove('overlay-visible', 'open'); // Remove both
-                    menuWrapper.style.pointerEvents = 'none';
-                    mobileToggle.setAttribute('aria-expanded', 'false');
+                    // First hide content immediately
+                    const content = mobileNav.querySelector('.mobile-nav-content');
+                    if (content) content.style.opacity = '0';
+                    
+                    // Then hide menu after short delay to allow content to fade
+                    setTimeout(() => {
+                        mobileNav.classList.remove('menu-visible', 'open'); // Remove both
+                        overlay.classList.remove('overlay-visible', 'open'); // Remove both
+                        menuWrapper.style.pointerEvents = 'none';
+                        mobileToggle.setAttribute('aria-expanded', 'false');
+                    }, 100);
                 } else {
                     console.log('🍔 Opening menu...');
                     mobileNav.classList.add('menu-visible');
                     overlay.classList.add('overlay-visible');
                     menuWrapper.style.pointerEvents = 'auto';
                     mobileToggle.setAttribute('aria-expanded', 'true');
+                    
+                    // Show content after menu is positioned
+                    setTimeout(() => {
+                        const content = mobileNav.querySelector('.mobile-nav-content');
+                        if (content) content.style.opacity = '1';
+                    }, 50);
                 }
                 
                 console.log('🍔 Menu classes after toggle:', mobileNav.classList.toString());
@@ -124,10 +137,17 @@
             // Close on overlay click
             overlay.addEventListener('click', function() {
                 console.log('🍔 Overlay clicked, closing menu');
-                mobileNav.classList.remove('menu-visible', 'open');
-                overlay.classList.remove('overlay-visible', 'open');
-                menuWrapper.style.pointerEvents = 'none';
-                mobileToggle.setAttribute('aria-expanded', 'false');
+                // First hide content immediately
+                const content = mobileNav.querySelector('.mobile-nav-content');
+                if (content) content.style.opacity = '0';
+                
+                // Then hide menu after short delay
+                setTimeout(() => {
+                    mobileNav.classList.remove('menu-visible', 'open');
+                    overlay.classList.remove('overlay-visible', 'open');
+                    menuWrapper.style.pointerEvents = 'none';
+                    mobileToggle.setAttribute('aria-expanded', 'false');
+                }, 100);
             });
             
             // Close on menu link click
@@ -136,10 +156,17 @@
             mobileMenuLinks.forEach(link => {
                 link.addEventListener('click', function() {
                     console.log('🍔 Menu link clicked, closing menu');
-                    mobileNav.classList.remove('menu-visible', 'open');
-                    overlay.classList.remove('overlay-visible', 'open');
-                    menuWrapper.style.pointerEvents = 'none';
-                    mobileToggle.setAttribute('aria-expanded', 'false');
+                    // First hide content immediately
+                    const content = mobileNav.querySelector('.mobile-nav-content');
+                    if (content) content.style.opacity = '0';
+                    
+                    // Then hide menu after short delay
+                    setTimeout(() => {
+                        mobileNav.classList.remove('menu-visible', 'open');
+                        overlay.classList.remove('overlay-visible', 'open');
+                        menuWrapper.style.pointerEvents = 'none';
+                        mobileToggle.setAttribute('aria-expanded', 'false');
+                    }, 100);
                 });
             });
             
@@ -150,10 +177,17 @@
                     // Check if click is outside menu and not on toggle button
                     if (!mobileNav.contains(e.target) && !mobileToggle.contains(e.target)) {
                         console.log('🍔 Clicked outside menu, closing...');
-                        mobileNav.classList.remove('menu-visible', 'open');
-                        overlay.classList.remove('overlay-visible', 'open');
-                        menuWrapper.style.pointerEvents = 'none';
-                        mobileToggle.setAttribute('aria-expanded', 'false');
+                        // First hide content immediately
+                        const content = mobileNav.querySelector('.mobile-nav-content');
+                        if (content) content.style.opacity = '0';
+                        
+                        // Then hide menu after short delay
+                        setTimeout(() => {
+                            mobileNav.classList.remove('menu-visible', 'open');
+                            overlay.classList.remove('overlay-visible', 'open');
+                            menuWrapper.style.pointerEvents = 'none';
+                            mobileToggle.setAttribute('aria-expanded', 'false');
+                        }, 100);
                     }
                 }
             });
@@ -162,10 +196,17 @@
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape' && mobileNav.classList.contains('menu-visible')) {
                     console.log('🍔 Escape key pressed, closing menu...');
-                    mobileNav.classList.remove('menu-visible', 'open');
-                    overlay.classList.remove('overlay-visible', 'open');
-                    menuWrapper.style.pointerEvents = 'none';
-                    mobileToggle.setAttribute('aria-expanded', 'false');
+                    // First hide content immediately
+                    const content = mobileNav.querySelector('.mobile-nav-content');
+                    if (content) content.style.opacity = '0';
+                    
+                    // Then hide menu after short delay
+                    setTimeout(() => {
+                        mobileNav.classList.remove('menu-visible', 'open');
+                        overlay.classList.remove('overlay-visible', 'open');
+                        menuWrapper.style.pointerEvents = 'none';
+                        mobileToggle.setAttribute('aria-expanded', 'false');
+                    }, 100);
                 }
             });
             

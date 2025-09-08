@@ -471,7 +471,7 @@ a:hover {
   height: 100vh;
   background: #ffffff !important;
   z-index: 9999;
-  transition: right 0.3s ease;
+  transition: right 0.3s ease, visibility 0.3s ease;
   box-shadow: none !important;
   border: none !important;
   outline: none !important;
@@ -514,10 +514,14 @@ a:hover {
   will-change: transform;
 }
 
+.mobile-nav.menu-visible .mobile-nav-content {
+  opacity: 1;
+}
+
 .mobile-nav-content {
   padding: 2rem;
   background: #ffffff !important;
-  opacity: 1 !important;
+  opacity: 0;
   position: relative;
   z-index: 10000;
   color: #333333 !important;
@@ -528,6 +532,7 @@ a:hover {
   -webkit-backdrop-filter: none !important;
   isolation: isolate;
   transform: translateZ(0);
+  transition: opacity 0.15s ease;
 }
 
 .mobile-nav-header {
