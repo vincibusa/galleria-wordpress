@@ -292,6 +292,9 @@ get_header(); ?>
 }
 
 /* News-specific: override aspect-ratio and ensure no descender gap */
+.news-events {
+   margin-top: 40px;
+}
 .news-events .card-image {
     aspect-ratio: auto; /* allow fixed image height to control size */
     height: auto;
