@@ -8,11 +8,7 @@ get_header(); ?>
 <main id="main_content" class="main-content">
     <div class="container py-16">
         <header class="archive-header mb-8">
-            <h1 class="text-2xl font-light">
-                <a href="<?php echo esc_url( get_post_type_archive_link( 'project' ) ); ?>">
-                    <?php _e('Projects', 'galleria'); ?>
-                </a>
-            </h1>
+            <h1 class="text-2xl font-light"><?php _e('Projects', 'galleria'); ?></h1>
             
             <!-- filters removed -->
         </header>
@@ -41,7 +37,7 @@ get_header(); ?>
                     $start_date = get_field('start_date');
                     $end_date = get_field('end_date');
                 ?>
-                    <article id="post-<?php the_ID(); ?>" <?php post_class('project-card border-b border-gray-100 pb-8 last:border-b-0'); ?> >
+                    <article id="post-<?php the_ID(); ?>" <?php post_class('project-card border-b border-gray-100 pb-8 last:border-b-0'); ?>>
                         <?php if (has_post_thumbnail()) : ?>
                             <div class="relative aspect-video overflow-hidden bg-gray-100">
                                 <a href="<?php the_permalink(); ?>">
@@ -58,7 +54,7 @@ get_header(); ?>
                             <?php if ($start_date && $end_date) : ?>
                                 <p class="text-sm font-light text-gray-600 uppercase tracking-wide">
                                     <?php 
-                                    // Format dates to show month names
+                                    // Format dates to show month names like in Next.js
                                     $start = new DateTime($start_date);
                                     $end = new DateTime($end_date);
                                     $start_month = $start->format('F');
@@ -132,7 +128,7 @@ get_header(); ?>
 </main>
 
 <style>
-/* Tailwind-like utilities for consistent styling (copied from exhibitions) */
+/* Tailwind-like utilities for consistent styling */
 .text-gray-600 {
     color: #4b5563;
 }

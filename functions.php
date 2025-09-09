@@ -8,8 +8,8 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Include migration script
-require_once get_template_directory() . '/migration-script.php';
+// Include migration script only when needed (commented out for now)
+// require_once get_template_directory() . '/migration-script.php';
 
 // Add admin menu for migration
 add_action('admin_menu', 'galleria_add_migration_menu');
