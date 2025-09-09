@@ -9,69 +9,86 @@ get_header(); ?>
     <?php while (have_posts()) : the_post(); ?>
         <article id="post-<?php the_ID(); ?>" <?php post_class('contact-page'); ?>>
             <!-- Contact Hero Section -->
-            <section class="contact-hero py-16">
-                <div class="container">
-                    <div class="max-w-4xl mx-auto text-center">
-                        <h1 class="text-4xl font-light mb-6"><?php the_title(); ?></h1>
+            <section class="contact-hero">
+                <div class="container py-16">
+                    <div class="text-center mb-16">
+                        <h1><?php the_title(); ?></h1>
                         <?php if (has_excerpt()) : ?>
-                            <div class="text-xl text-gray-600 font-light">
-                                <?php the_excerpt(); ?>
-                            </div>
+                            <p class="hero-subtitle"><?php the_excerpt(); ?></p>
                         <?php endif; ?>
                     </div>
                 </div>
             </section>
 
             <!-- Contact Content -->
-            <section class="contact-content py-16 bg-gray-50">
-                <div class="container">
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <section class="contact-content">
+                <div class="container py-16">
+                    <div class="contact-grid">
                         <!-- Contact Form -->
                         <div class="contact-form-section">
-                            <div class="bg-white p-8 rounded-lg shadow-sm">
-                                <h2 class="text-2xl font-light mb-6"><?php _e('Get in Touch', 'galleria'); ?></h2>
+                            <div class="form-container">
+                                <h2><?php _e('Contattaci', 'galleria'); ?></h2>
+                                
+                                <!-- Form Messages -->
+                                <?php if (isset($_GET['contact'])) : ?>
+                                    <?php if ($_GET['contact'] === 'success') : ?>
+                                        <div class="form-message success">
+                                            <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                            <?php echo esc_html(isset($_GET['message']) ? urldecode($_GET['message']) : __('Messaggio inviato con successo!', 'galleria')); ?>
+                                        </div>
+                                    <?php elseif ($_GET['contact'] === 'error') : ?>
+                                        <div class="form-message error">
+                                            <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                            <?php echo esc_html(isset($_GET['message']) ? urldecode($_GET['message']) : __('Errore nell\'invio del messaggio.', 'galleria')); ?>
+                                        </div>
+                                    <?php endif; ?>
+                                <?php endif; ?>
                                 
                                 <!-- Contact Form -->
-                                <form class="contact-form" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post">
+                                <form class="contact-form" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post" novalidate aria-label="<?php _e('Form di contatto della galleria', 'galleria'); ?>">
                                     <?php wp_nonce_field('galleria_contact_form', 'contact_nonce'); ?>
                                     <input type="hidden" name="action" value="galleria_contact_form">
                                     
                                     <div class="form-group">
-                                        <label for="contact_name"><?php _e('Name *', 'galleria'); ?></label>
+                                        <label for="contact_name"><?php _e('Nome *', 'galleria'); ?></label>
                                         <input type="text" id="contact_name" name="contact_name" required 
-                                               class="form-control" placeholder="<?php _e('Your name', 'galleria'); ?>">
+                                               class="form-control" placeholder="<?php _e('Il tuo nome', 'galleria'); ?>">
                                     </div>
                                     
                                     <div class="form-group">
                                         <label for="contact_email"><?php _e('Email *', 'galleria'); ?></label>
                                         <input type="email" id="contact_email" name="contact_email" required 
-                                               class="form-control" placeholder="<?php _e('your@email.com', 'galleria'); ?>">
+                                               class="form-control" placeholder="<?php _e('tua@email.com', 'galleria'); ?>">
                                     </div>
                                     
                                     <div class="form-group">
-                                        <label for="contact_phone"><?php _e('Phone', 'galleria'); ?></label>
+                                        <label for="contact_phone"><?php _e('Telefono', 'galleria'); ?></label>
                                         <input type="tel" id="contact_phone" name="contact_phone" 
-                                               class="form-control" placeholder="<?php _e('Your phone number', 'galleria'); ?>">
+                                               class="form-control" placeholder="<?php _e('Il tuo numero di telefono', 'galleria'); ?>">
                                     </div>
                                     
                                     <div class="form-group">
-                                        <label for="contact_subject"><?php _e('Subject *', 'galleria'); ?></label>
+                                        <label for="contact_subject"><?php _e('Oggetto *', 'galleria'); ?></label>
                                         <select id="contact_subject" name="contact_subject" required class="form-control">
-                                            <option value=""><?php _e('Select a subject', 'galleria'); ?></option>
-                                            <option value="general"><?php _e('General Inquiry', 'galleria'); ?></option>
-                                            <option value="exhibition"><?php _e('Exhibition Information', 'galleria'); ?></option>
-                                            <option value="artist"><?php _e('Artist Information', 'galleria'); ?></option>
-                                            <option value="press"><?php _e('Press & Media', 'galleria'); ?></option>
-                                            <option value="visit"><?php _e('Visit Planning', 'galleria'); ?></option>
-                                            <option value="other"><?php _e('Other', 'galleria'); ?></option>
+                                            <option value=""><?php _e('Seleziona un oggetto', 'galleria'); ?></option>
+                                            <option value="general"><?php _e('Richiesta Generale', 'galleria'); ?></option>
+                                            <option value="exhibition"><?php _e('Informazioni Mostre', 'galleria'); ?></option>
+                                            <option value="artist"><?php _e('Informazioni Artisti', 'galleria'); ?></option>
+                                            <option value="press"><?php _e('Stampa e Media', 'galleria'); ?></option>
+                                            <option value="visit"><?php _e('Pianificazione Visita', 'galleria'); ?></option>
+                                            <option value="other"><?php _e('Altro', 'galleria'); ?></option>
                                         </select>
                                     </div>
                                     
                                     <div class="form-group">
-                                        <label for="contact_message"><?php _e('Message *', 'galleria'); ?></label>
+                                        <label for="contact_message"><?php _e('Messaggio *', 'galleria'); ?></label>
                                         <textarea id="contact_message" name="contact_message" required 
                                                   class="form-control" rows="5" 
-                                                  placeholder="<?php _e('Your message...', 'galleria'); ?>"></textarea>
+                                                  placeholder="<?php _e('Il tuo messaggio...', 'galleria'); ?>"></textarea>
                                     </div>
                                     
                                     <div class="form-group">
@@ -80,7 +97,7 @@ get_header(); ?>
                                             <span class="checkmark"></span>
                                             <?php 
                                             echo sprintf(
-                                                __('I agree to the processing of my personal data in accordance with the %s', 'galleria'),
+                                                __('Acconsento al trattamento dei miei dati personali in conformità con la %s', 'galleria'),
                                                 '<a href="#" class="underline">privacy policy</a>'
                                             ); 
                                             ?>
@@ -88,7 +105,7 @@ get_header(); ?>
                                     </div>
                                     
                                     <button type="submit" class="btn-submit">
-                                        <?php _e('Send Message', 'galleria'); ?>
+                                        <?php _e('Invia Messaggio', 'galleria'); ?>
                                     </button>
                                 </form>
                             </div>
@@ -97,8 +114,8 @@ get_header(); ?>
                         <!-- Contact Information -->
                         <div class="contact-info-section">
                             <!-- General Information -->
-                            <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
-                                <h3 class="text-xl font-light mb-4"><?php _e('Gallery Information', 'galleria'); ?></h3>
+                            <div class="info-card">
+                                <h3><?php _e('Informazioni Galleria', 'galleria'); ?></h3>
                                 
                                 <div class="space-y-4">
                                     <div class="contact-item">
@@ -110,7 +127,8 @@ get_header(); ?>
                                         </div>
                                         <div>
                                             <strong><?php _e('Email:', 'galleria'); ?></strong>
-                                            <a href="mailto:catanzaroepartners@gmail.com">catanzaroepartners@gmail.com</a>
+                                            <?php $email = get_theme_mod('galleria_email', 'catanzaroepartners@gmail.com'); ?>
+                                            <a href="mailto:<?php echo esc_attr($email); ?>"><?php echo esc_html($email); ?></a>
                                         </div>
                                     </div>
                                     
@@ -122,8 +140,9 @@ get_header(); ?>
                                             </svg>
                                         </div>
                                         <div>
-                                            <strong><?php _e('Phone:', 'galleria'); ?></strong>
-                                            <a href="tel:+393271677871">+39 327 167 7871</a>
+                                            <strong><?php _e('Telefono:', 'galleria'); ?></strong>
+                                            <?php $phone = get_theme_mod('galleria_phone', '+39 327 167 7871'); ?>
+                                            <a href="tel:<?php echo esc_attr(str_replace(' ', '', $phone)); ?>"><?php echo esc_html($phone); ?></a>
                                         </div>
                                     </div>
                                     
@@ -135,18 +154,18 @@ get_header(); ?>
                                             </svg>
                                         </div>
                                         <div>
-                                            <strong><?php _e('Hours:', 'galleria'); ?></strong>
-                                            <span>Martedì–Sabato: 10:00–18:00</span>
+                                            <strong><?php _e('Orari:', 'galleria'); ?></strong>
+                                            <span><?php echo esc_html(get_theme_mod('galleria_hours', 'Martedì–Sabato: 10:00–18:00')); ?></span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             
                             <!-- Locations -->
-                            <div class="locations-grid space-y-6">
+                            <div class="locations-section">
                                 <!-- Montevergini Location -->
-                                <div class="bg-white p-6 rounded-lg shadow-sm">
-                                    <h3 class="text-lg font-medium mb-3"><?php _e('Sede Montevergini', 'galleria'); ?></h3>
+                                <div class="location-card">
+                                    <h3><?php _e('Sede Montevergini', 'galleria'); ?></h3>
                                     
                                     <div class="contact-item">
                                         <div class="contact-icon">
@@ -157,15 +176,15 @@ get_header(); ?>
                                             </svg>
                                         </div>
                                         <div>
-                                            <p>Via Montevergini 3</p>
-                                            <p>90133 Palermo</p>
+                                            <?php $address1 = get_theme_mod('galleria_address_1', 'Via Montevergini 3, Palermo'); ?>
+                                            <p><?php echo esc_html($address1); ?></p>
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <!-- Corso Vittorio Emanuele Location -->
-                                <div class="bg-white p-6 rounded-lg shadow-sm">
-                                    <h3 class="text-lg font-medium mb-3"><?php _e('Sede Corso Vittorio Emanuele', 'galleria'); ?></h3>
+                                <div class="location-card">
+                                    <h3><?php _e('Sede Corso Vittorio Emanuele', 'galleria'); ?></h3>
                                     
                                     <div class="contact-item">
                                         <div class="contact-icon">
@@ -176,28 +195,106 @@ get_header(); ?>
                                             </svg>
                                         </div>
                                         <div>
-                                            <p>Corso Vittorio Emanuele 383</p>
-                                            <p>90133 Palermo</p>
+                                            <?php $address2 = get_theme_mod('galleria_address_2', 'Corso Vittorio Emanuele 383, Palermo'); ?>
+                                            <p><?php echo esc_html($address2); ?></p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             
                             <!-- Directions -->
-                            <div class="bg-white p-6 rounded-lg shadow-sm mt-6">
-                                <h3 class="text-lg font-medium mb-3"><?php _e('Directions', 'galleria'); ?></h3>
-                                <p class="text-sm text-gray-600 mb-3">
-                                    <?php _e('The gallery is easily accessible by public transport and is located in the historic center of Palermo.', 'galleria'); ?>
+                            <div class="directions-card">
+                                <h3><?php _e('Come Raggiungerci', 'galleria'); ?></h3>
+                                <p>
+                                    <?php _e('La galleria è facilmente raggiungibile con i mezzi pubblici e si trova nel centro storico di Palermo.', 'galleria'); ?>
                                 </p>
                                 <a href="https://maps.google.com/?q=Via+Montevergini+3,+Palermo" 
                                    target="_blank" rel="noopener noreferrer"
-                                   class="inline-flex items-center text-sm hover:underline">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                                    </svg>
-                                    <?php _e('Open in Google Maps', 'galleria'); ?>
+                                   class="directions-link">
+                                    <?php _e('Apri in Google Maps', 'galleria'); ?>
                                 </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Map Section -->
+            <section class="map-section">
+                <div class="container py-16">
+                    <div class="text-center mb-16">
+                        <h2><?php _e('Dove Trovarci', 'galleria'); ?></h2>
+                        <p class="hero-subtitle"><?php _e('La galleria è facilmente raggiungibile con i mezzi pubblici nel centro storico di Palermo', 'galleria'); ?></p>
+                    </div>
+                    
+                    <!-- Interactive Map -->
+                    <div class="map-container">
+                            <!-- Map -->
+                            <div>
+                                <div class="map-embed">
+                                        <iframe 
+                                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3149.123!2d13.366!3d38.115!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzjCsDA2JzU0LjAiTiAxM8KwMjEnNTcuNiJF!5e0!3m2!1sit!2sit!4v1234567890" 
+                                            width="100%" 
+                                            height="100%" 
+                                            style="border:0;" 
+                                            allowfullscreen="" 
+                                            loading="lazy" 
+                                            referrerpolicy="no-referrer-when-downgrade"
+                                            title="<?php _e('Mappa delle sedi della Galleria Adalberto Catanzaro', 'galleria'); ?>">
+                                        </iframe>
+                                    </div>
+                                </div>
+                                
+                            <!-- Quick Info -->
+                            <div>
+                                <h3><?php _e('Le Nostre Sedi', 'galleria'); ?></h3>
+                                
+                                <div class="space-y-4">
+                                        <!-- Sede 1 -->
+                                        <div class="location-card">
+                                            <div class="flex items-start gap-3">
+                                                <div class="location-marker">1</div>
+                                                <div>
+                                                    <h4><?php _e('Sede Montevergini', 'galleria'); ?></h4>
+                                                    <p><?php echo esc_html(get_theme_mod('galleria_address_1', 'Via Montevergini 3, Palermo')); ?></p>
+                                                    <a href="https://maps.google.com/?q=<?php echo urlencode(get_theme_mod('galleria_address_1', 'Via Montevergini 3, Palermo')); ?>" 
+                                                       target="_blank" rel="noopener noreferrer">
+                                                        <?php _e('Apri in Google Maps', 'galleria'); ?>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Sede 2 -->
+                                        <div class="location-card">
+                                            <div class="flex items-start gap-3">
+                                                <div class="location-marker">2</div>
+                                                <div>
+                                                    <h4><?php _e('Sede Corso Vittorio Emanuele', 'galleria'); ?></h4>
+                                                    <p><?php echo esc_html(get_theme_mod('galleria_address_2', 'Corso Vittorio Emanuele 383, Palermo')); ?></p>
+                                                    <a href="https://maps.google.com/?q=<?php echo urlencode(get_theme_mod('galleria_address_2', 'Corso Vittorio Emanuele 383, Palermo')); ?>" 
+                                                       target="_blank" rel="noopener noreferrer">
+                                                        <?php _e('Apri in Google Maps', 'galleria'); ?>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Info -->
+                                        <div class="map-info">
+                                            <p>
+                                                <strong><?php _e('Orari:', 'galleria'); ?></strong><br>
+                                                <?php echo esc_html(get_theme_mod('galleria_hours', 'Martedì–Sabato: 10:00–18:00')); ?>
+                                            </p>
+                                            <p>
+                                                <strong><?php _e('Telefono:', 'galleria'); ?></strong><br>
+                                                <a href="tel:<?php echo esc_attr(str_replace(' ', '', get_theme_mod('galleria_phone', '+39 327 167 7871'))); ?>">
+                                                    <?php echo esc_html(get_theme_mod('galleria_phone', '+39 327 167 7871')); ?>
+                                                </a>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -219,11 +316,40 @@ get_header(); ?>
 </main>
 
 <style>
-/* Contact Form Styles */
+/* Contact Page - Consistent with site design */
+
+/* Hero Section */
+.contact-hero {
+    margin-bottom: 4rem;
+}
+
+.hero-subtitle {
+    font-size: 1.125rem;
+    font-weight: 300;
+    color: #6b7280;
+    margin-top: 1rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Main Layout */
+.contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+}
+
+/* Form Section */
+.form-container {
+    margin-bottom: 4rem;
+}
+
 .contact-form {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 2rem;
 }
 
 .form-group {
@@ -234,26 +360,29 @@ get_header(); ?>
 
 .form-group label {
     font-size: 0.875rem;
-    font-weight: 500;
-    color: #374151;
+    font-weight: 300;
+    color: #111827;
 }
 
 .form-control {
-    padding: 0.75rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.5rem;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0;
     font-size: 0.875rem;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    font-weight: 300;
+    font-family: inherit;
+    background: white;
+    transition: border-color 0.3s ease;
 }
 
 .form-control:focus {
     outline: none;
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    border-color: #111827;
 }
 
 .form-control::placeholder {
     color: #9ca3af;
+    font-weight: 300;
 }
 
 textarea.form-control {
@@ -267,117 +396,337 @@ textarea.form-control {
     align-items: flex-start;
     gap: 0.5rem;
     font-size: 0.875rem;
+    font-weight: 300;
     line-height: 1.4;
     cursor: pointer;
 }
 
-.checkbox-label input[type="checkbox"] {
-    margin: 0;
-    width: 1rem;
-    height: 1rem;
-    flex-shrink: 0;
-}
-
-/* Submit Button */
+/* Submit Button - consistent with site */
 .btn-submit {
     background-color: #111827;
     color: white;
-    padding: 0.75rem 1.5rem;
+    padding: 1rem 2rem;
     border: none;
-    border-radius: 0.5rem;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 300;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
+    align-self: flex-start;
 }
 
 .btn-submit:hover {
     background-color: #374151;
 }
 
-.btn-submit:disabled {
-    background-color: #9ca3af;
-    cursor: not-allowed;
+/* Info Section */
+.info-card {
+    margin-bottom: 3rem;
 }
 
-/* Contact Items */
+.contact-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
 .contact-item {
     display: flex;
-    gap: 0.75rem;
+    gap: 1rem;
     align-items: flex-start;
 }
 
 .contact-icon {
     color: #6b7280;
     margin-top: 0.125rem;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.contact-item div:last-child {
+    flex: 1;
 }
 
 .contact-item strong {
     display: block;
     font-size: 0.875rem;
-    color: #374151;
+    font-weight: 300;
+    color: #111827;
     margin-bottom: 0.25rem;
 }
 
 .contact-item a {
-    color: #111827;
+    color: #6b7280;
     text-decoration: none;
     font-size: 0.875rem;
+    font-weight: 300;
+    transition: color 0.3s ease;
 }
 
 .contact-item a:hover {
-    text-decoration: underline;
+    color: #111827;
 }
 
 .contact-item span {
     font-size: 0.875rem;
+    font-weight: 300;
     color: #6b7280;
+}
+
+/* Locations */
+.locations-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.location-card {
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.location-card:last-child {
+    border-bottom: none;
+}
+
+/* Directions */
+.directions-card p {
+    margin-bottom: 1rem;
+}
+
+.directions-link {
+    font-size: 0.875rem;
+    font-weight: 300;
+    color: #111827;
+    text-decoration: underline;
+    transition: color 0.3s ease;
+}
+
+.directions-link:hover {
+    color: #6b7280;
+}
+
+/* Map Section - Redesigned */
+.map-section {
+    background: #f9fafb;
+}
+
+.map-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 0;
+    background: white;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+.map-embed {
+height: 100%;
+    min-height: 500px;
+    position: relative;
+}
+
+.map-embed iframe {
+    width: 100%;
+    height: 100%;
+}
+
+.map-container > div:last-child {
+    padding: 3rem;
+    background: #f9fafb;
+    border-left: 1px solid #e5e7eb;
+}
+
+.location-marker {
+    background-color: #111827;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+/* Form Messages */
+.form-message {
+    padding: 1rem;
+    margin-bottom: 2rem;
+    font-size: 0.875rem;
+    font-weight: 300;
+}
+
+.form-message.success {
+    background-color: #f0fdf4;
+    color: #166534;
+    border-left: 4px solid #22c55e;
+}
+
+.form-message.error {
+    background-color: #fef2f2;
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
 }
 
 /* Responsive */
 @media (max-width: 1024px) {
-    .contact-content .grid {
+    .contact-grid {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+    }
+    
+    .map-container {
         grid-template-columns: 1fr;
     }
     
-    .contact-form-section {
-        order: 2;
+    .map-container > div:last-child {
+        border-left: none;
+        border-top: 1px solid #e5e7eb;
+        padding: 2rem;
     }
     
-    .contact-info-section {
-        order: 1;
-        margin-bottom: 2rem;
+    .map-embed {
+        min-height: 300px;
     }
 }
 
-/* Form validation styles */
-.form-control:invalid:not(:focus):not(:placeholder-shown) {
-    border-color: #ef4444;
+@media (max-width: 640px) {
+    .container {
+        padding: 0 1rem;
+    }
+    
+    .contact-grid {
+        gap: 2rem;
+    }
+    
+    .map-container > div:last-child {
+        padding: 1.5rem;
+    }
 }
 
-.form-control:valid:not(:focus):not(:placeholder-shown) {
-    border-color: #10b981;
+/* Additional Utility Classes for consistency */
+.py-16 {
+    padding-top: 4rem;
+    padding-bottom: 4rem;
 }
 
-/* Success/Error messages */
-.form-message {
-    padding: 1rem;
-    border-radius: 0.5rem;
-    margin-bottom: 1.5rem;
+.mb-16 {
+    margin-bottom: 4rem;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.space-y-4 > * + * {
+    margin-top: 1rem;
+}
+
+/* Map Info Section */
+.map-info {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.map-info p {
+    margin-bottom: 1rem;
     font-size: 0.875rem;
+    font-weight: 300;
+    color: #6b7280;
 }
 
-.form-message.success {
-    background-color: #d1fae5;
-    color: #065f46;
-    border: 1px solid #a7f3d0;
+.map-info strong {
+    color: #111827;
+    font-weight: 300;
 }
 
-.form-message.error {
-    background-color: #fee2e2;
-    color: #991b1b;
-    border: 1px solid #fca5a5;
+.map-info a {
+    color: #6b7280;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.map-info a:hover {
+    color: #111827;
+}
+
+/* Loading Animation for Form */
+.btn-submit:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.btn-submit:disabled::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Form enhancement
+    const form = document.querySelector('.contact-form');
+    const submitBtn = form.querySelector('.btn-submit');
+    const originalText = submitBtn.textContent;
+    
+    if (form && submitBtn) {
+        form.addEventListener('submit', function() {
+            submitBtn.disabled = true;
+            submitBtn.textContent = '<?php _e("Invio in corso...", "galleria"); ?>';
+        });
+        
+        // Re-enable on error (if user stays on page)
+        setTimeout(function() {
+            if (submitBtn.disabled) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }, 5000);
+    }
+    
+    // Auto-hide success/error messages
+    const messages = document.querySelectorAll('.form-message');
+    messages.forEach(function(message) {
+        setTimeout(function() {
+            message.style.opacity = '0';
+            message.style.transform = 'translateY(-20px)';
+            setTimeout(function() {
+                if (message.parentNode) {
+                    message.parentNode.removeChild(message);
+                }
+            }, 300);
+        }, 5000);
+    });
+    
+    // Smooth scroll to form on error
+    if (window.location.search.includes('contact=error')) {
+        const formSection = document.querySelector('.contact-form-section');
+        if (formSection) {
+            setTimeout(function() {
+                formSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+    }
+});
+</script>
 
 <?php get_footer(); ?>

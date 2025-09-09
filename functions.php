@@ -515,6 +515,24 @@ add_action('wp_head', 'galleria_add_structured_data');
 
 
 /**
+ * Add custom rewrite rule for /news/
+ */
+function galleria_add_news_rewrite_rule() {
+    add_rewrite_rule('^news/?$', 'index.php?post_type=post', 'top');
+    add_rewrite_rule('^news/page/([0-9]+)/?$', 'index.php?post_type=post&paged=$matches[1]', 'top');
+}
+add_action('init', 'galleria_add_news_rewrite_rule');
+
+/**
+ * Flush rewrite rules on theme activation
+ */
+function galleria_flush_rewrite_rules() {
+    galleria_add_news_rewrite_rule();
+    flush_rewrite_rules();
+}
+add_action('after_switch_theme', 'galleria_flush_rewrite_rules');
+
+/**
  * Include additional files
  */
 require_once get_template_directory() . '/inc/acf-fields.php';

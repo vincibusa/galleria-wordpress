@@ -11,7 +11,19 @@ get_header(); ?>
             <div class="posts-grid grid grid-cols-1 md-grid-cols-2 lg-grid-cols-3">
                 <?php while (have_posts()) : the_post(); ?>
                     <article id="post-<?php the_ID(); ?>" <?php post_class('card'); ?>>
-                        <?php if (has_post_thumbnail()) : ?>
+                        <?php 
+                        $image_path = get_post_meta(get_the_ID(), 'image_path', true);
+                        if ($image_path) :
+                            $image_url = get_template_directory_uri() . '/assets/images/' . $image_path;
+                        ?>
+                            <div class="card-image">
+                                <a href="<?php the_permalink(); ?>">
+                                    <img src="<?php echo esc_url($image_url); ?>" 
+                                         alt="<?php echo esc_attr(get_the_title()); ?>"
+                                         style="width: 100%; height: 250px; object-fit: cover;">
+                                </a>
+                            </div>
+                        <?php elseif (has_post_thumbnail()) : ?>
                             <div class="card-image">
                                 <a href="<?php the_permalink(); ?>">
                                     <?php the_post_thumbnail('gallery-card', array('alt' => get_the_title())); ?>
@@ -61,6 +73,148 @@ get_header(); ?>
         <?php endif; ?>
     </div>
 </main>
+
+<style>
+/* Archive/Index Page Styles */
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 4rem 1rem;
+}
+
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 2rem;
+}
+
+.card {
+    border: 0;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-content {
+    padding: 0;
+}
+
+.card-image img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.space-y-2 > * + * {
+    margin-top: 0.25rem;
+}
+
+.card-title {
+    font-size: 1.125rem;
+    font-weight: 300;
+    line-height: 1.4;
+    margin-bottom: 0;
+}
+
+.card-title strong {
+    font-weight: 500;
+}
+
+.card-title a {
+    color: #111827;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.card-title a:hover {
+    color: #6b7280;
+}
+
+.card-meta {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 300;
+    margin-bottom: 0.25rem;
+}
+
+.card-description {
+    font-size: 0.875rem;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+.no-posts {
+    text-align: center;
+    padding: 4rem 1rem;
+}
+
+.no-posts h1 {
+    font-size: 2rem;
+    font-weight: 300;
+    margin-bottom: 1rem;
+    color: #111827;
+}
+
+.no-posts p {
+    color: #6b7280;
+    margin-bottom: 2rem;
+}
+
+/* Pagination */
+.navigation.pagination {
+    margin-top: 3rem;
+    text-align: center;
+}
+
+.page-numbers {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    margin: 0 0.25rem;
+    color: #6b7280;
+    text-decoration: none;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.page-numbers:hover,
+.page-numbers.current {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+    color: #111827;
+}
+
+.page-numbers.current {
+    background-color: #111827;
+    color: white;
+    border-color: #111827;
+}
+
+@media (min-width: 768px) {
+    .posts-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    
+    .container {
+        padding: 4rem 1.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .posts-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    
+    .container {
+        padding: 4rem 2rem;
+    }
+}
+</style>
 
 <?php
 get_footer();

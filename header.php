@@ -44,7 +44,13 @@
                     echo '<ul class="nav-menu">';
                     echo '<li><a href="' . esc_url(get_post_type_archive_link('artist')) . '">' . __('Artists', 'galleria') . '</a></li>';
                     echo '<li><a href="' . esc_url(get_post_type_archive_link('exhibition')) . '">' . __('Exhibitions', 'galleria') . '</a></li>';
-                    echo '<li><a href="' . esc_url(get_permalink(get_option('page_for_posts'))) . '">' . __('News', 'galleria') . '</a></li>';
+                    // Prioritize: custom page for posts > /news/ route > home page
+                    if (get_option('page_for_posts')) {
+                        $news_url = get_permalink(get_option('page_for_posts'));
+                    } else {
+                        $news_url = home_url('/news/');
+                    }
+                    echo '<li><a href="' . esc_url($news_url) . '">' . __('News', 'galleria') . '</a></li>';
                     if (class_exists('WooCommerce')) {
                         echo '<li><a href="' . esc_url(wc_get_page_permalink('shop')) . '">' . __('Shop', 'galleria') . '</a></li>';
                     }
@@ -118,7 +124,13 @@
                         echo '<ul class="mobile-menu">';
                         echo '<li><a href="' . esc_url(get_post_type_archive_link('artist')) . '">' . __('Artists', 'galleria') . '</a></li>';
                         echo '<li><a href="' . esc_url(get_post_type_archive_link('exhibition')) . '">' . __('Exhibitions', 'galleria') . '</a></li>';
-                        echo '<li><a href="' . esc_url(get_permalink(get_option('page_for_posts'))) . '">' . __('News', 'galleria') . '</a></li>';
+                        // Prioritize: custom page for posts > /news/ route > home page
+                    if (get_option('page_for_posts')) {
+                        $news_url = get_permalink(get_option('page_for_posts'));
+                    } else {
+                        $news_url = home_url('/news/');
+                    }
+                    echo '<li><a href="' . esc_url($news_url) . '">' . __('News', 'galleria') . '</a></li>';
                         if (class_exists('WooCommerce')) {
                             echo '<li><a href="' . esc_url(wc_get_page_permalink('shop')) . '">' . __('Shop', 'galleria') . '</a></li>';
                         }
