@@ -32,7 +32,7 @@ get_header(); ?>
             </div>
         </div>
 
-        <!-- Artists List -->
+        <!-- Artists List (flat grid, no letter groups) -->
         <main id="artists-container">
             <?php 
             // Override the main query to get ALL artists alphabetically
@@ -46,46 +46,26 @@ get_header(); ?>
             ));
             
             if (have_posts()) : 
-                // Group artists by first letter
-                $artists_by_letter = array();
+                // Collect artists into a flat list
+                $all_artists = array();
                 while (have_posts()) : the_post();
-                    $first_letter = strtoupper(substr(get_the_title(), 0, 1));
-                    if (!isset($artists_by_letter[$first_letter])) {
-                        $artists_by_letter[$first_letter] = array();
-                    }
-                    $artists_by_letter[$first_letter][] = array(
+                    $all_artists[] = array(
                         'id' => get_the_ID(),
                         'title' => get_the_title(),
                         'permalink' => get_the_permalink()
                     );
                 endwhile;
-                
-                // Sort by letter
-                ksort($artists_by_letter);
-                
-                // Count total artists
-                $total_artists = 0;
-                foreach ($artists_by_letter as $artists) {
-                    $total_artists += count($artists);
-                }
+
+                $total_artists = count($all_artists);
             ?>
-                <div class="space-y-12" id="artists-list" data-total="<?php echo esc_attr($total_artists); ?>">
-                    <?php foreach ($artists_by_letter as $letter => $artists) : ?>
-                        <div class="letter-group space-y-4" data-letter="<?php echo esc_attr($letter); ?>">
-                            <h2 class="text-lg font-light text-gray-800 border-b border-gray-200 pb-2">
-                                <?php echo esc_html($letter); ?>
-                            </h2>
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-2">
-                                <?php foreach ($artists as $artist) : ?>
-                                    <div class="artist-item text-sm font-light py-1 block" data-name="<?php echo esc_attr(strtolower($artist['title'])); ?>">
-                                        <?php echo esc_html($artist['title']); ?>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
+                <div id="artists-list" class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-2" data-total="<?php echo esc_attr($total_artists); ?>">
+                    <?php foreach ($all_artists as $artist) : ?>
+                        <div class="artist-item text-sm font-light py-1 block" data-name="<?php echo esc_attr(strtolower($artist['title'])); ?>">
+                            <?php echo esc_html($artist['title']); ?>
                         </div>
                     <?php endforeach; ?>
                 </div>
-                
+
                 <!-- No results message -->
                 <div id="no-results" class="text-center py-16" style="display: none;">
                     <p class="text-gray-500 text-lg font-light">
@@ -95,15 +75,6 @@ get_header(); ?>
                         Cancella ricerca
                     </button>
                 </div>
-
-            <?php
-            // Pagination
-            the_posts_pagination(array(
-                'prev_text' => __('Precedente', 'galleria'),
-                'next_text' => __('Successivo', 'galleria'),
-                'before_page_number' => '<span class="meta-nav screen-reader-text">' . __('Pagina', 'galleria') . ' </span>',
-            ));
-            ?>
 
             <?php else : ?>
                 <div class="text-center py-16">
@@ -255,6 +226,10 @@ get_header(); ?>
     grid-template-columns: repeat(1, minmax(0, 1fr));
 }
 
+.md\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .flex {
     display: flex;
 }
@@ -361,9 +336,7 @@ get_header(); ?>
 }
 
 @media (min-width: 768px) {
-    .md\:grid-cols-2 {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+    /* at md breakpoint we keep single column, layout will switch to 3 columns at lg */
 }
 
 @media (min-width: 1024px) {
@@ -386,55 +359,37 @@ document.addEventListener('DOMContentLoaded', function() {
     const countElement = document.getElementById('artist-count');
     const clearButton = document.getElementById('clear-search');
     
-    // Get all artist items and letter groups
-    const artistItems = document.querySelectorAll('.artist-item');
-    const letterGroups = document.querySelectorAll('.letter-group');
+    // Get all artist items (flat list)
+    const artistItems = Array.from(document.querySelectorAll('.artist-item'));
     const totalArtists = parseInt(artistsContainer.getAttribute('data-total')) || artistItems.length;
-    
+
     // Initialize count
     updateCount(totalArtists);
-    
+
     function updateCount(count) {
         countElement.textContent = count + ' artist' + (count !== 1 ? 'i' : 'a');
     }
-    
+
     function filterArtists(searchTerm) {
         const term = searchTerm.toLowerCase().trim();
         let visibleCount = 0;
-        let hasVisibleGroups = false;
-        
-        letterGroups.forEach(group => {
-            const items = group.querySelectorAll('.artist-item');
-            let hasVisibleItems = false;
-            
-            items.forEach(item => {
-                const name = item.getAttribute('data-name');
-                const isVisible = !term || name.includes(term);
-                
-                item.style.display = isVisible ? 'block' : 'none';
-                
-                if (isVisible) {
-                    hasVisibleItems = true;
-                    visibleCount++;
-                }
-            });
-            
-            // Show/hide the entire letter group
-            group.style.display = hasVisibleItems ? 'block' : 'none';
-            if (hasVisibleItems) {
-                hasVisibleGroups = true;
-            }
+
+        artistItems.forEach(item => {
+            const name = item.getAttribute('data-name') || '';
+            const isVisible = !term || name.includes(term);
+            item.style.display = isVisible ? 'block' : 'none';
+            if (isVisible) visibleCount++;
         });
-        
+
         // Show/hide containers based on results
-        if (hasVisibleGroups) {
+        if (visibleCount > 0) {
             artistsContainer.style.display = 'block';
             noResultsDiv.style.display = 'none';
         } else {
             artistsContainer.style.display = 'none';
             noResultsDiv.style.display = 'block';
         }
-        
+
         updateCount(visibleCount);
     }
     
