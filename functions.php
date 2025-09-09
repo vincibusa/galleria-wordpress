@@ -533,6 +533,614 @@ function galleria_flush_rewrite_rules() {
 add_action('after_switch_theme', 'galleria_flush_rewrite_rules');
 
 /**
+ * SMTP Configuration for Email Delivery
+ * Configures WordPress to send emails via SMTP without plugins
+ */
+
+// Get SMTP settings from database or constants
+function galleria_get_smtp_settings() {
+    // Priority 1: Constants (backward compatibility)
+    if (defined('GALLERIA_SMTP_HOST') && defined('GALLERIA_SMTP_USER') && defined('GALLERIA_SMTP_PASS')) {
+        return array(
+            'host' => GALLERIA_SMTP_HOST,
+            'port' => defined('GALLERIA_SMTP_PORT') ? GALLERIA_SMTP_PORT : 587,
+            'secure' => defined('GALLERIA_SMTP_SECURE') ? GALLERIA_SMTP_SECURE : 'tls',
+            'username' => GALLERIA_SMTP_USER,
+            'password' => GALLERIA_SMTP_PASS,
+            'from_email' => defined('GALLERIA_SMTP_FROM') ? GALLERIA_SMTP_FROM : GALLERIA_SMTP_USER,
+            'from_name' => defined('GALLERIA_SMTP_FROM_NAME') ? GALLERIA_SMTP_FROM_NAME : 'Galleria Adalberto Catanzaro',
+            'debug' => defined('GALLERIA_SMTP_DEBUG') ? GALLERIA_SMTP_DEBUG : false,
+            'source' => 'constants'
+        );
+    }
+    
+    // Priority 2: Database settings
+    $db_settings = get_option('galleria_smtp_settings', array());
+    if (!empty($db_settings['host']) && !empty($db_settings['username']) && !empty($db_settings['password'])) {
+        // Decrypt password
+        $db_settings['password'] = galleria_decrypt_password($db_settings['password']);
+        $db_settings['source'] = 'database';
+        return $db_settings;
+    }
+    
+    return false;
+}
+
+// Encrypt password for database storage
+function galleria_encrypt_password($password) {
+    if (empty($password)) return '';
+    
+    $key = wp_salt('secure_auth');
+    $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
+    $encrypted = openssl_encrypt($password, 'aes-256-cbc', $key, 0, $iv);
+    return base64_encode($encrypted . '::' . $iv);
+}
+
+// Decrypt password from database
+function galleria_decrypt_password($encrypted_password) {
+    if (empty($encrypted_password)) return '';
+    
+    $key = wp_salt('secure_auth');
+    $data = base64_decode($encrypted_password);
+    if (strpos($data, '::') === false) return $encrypted_password; // Not encrypted
+    
+    list($encrypted, $iv) = explode('::', $data);
+    return openssl_decrypt($encrypted, 'aes-256-cbc', $key, 0, $iv);
+}
+
+// Configure SMTP settings
+function galleria_configure_smtp($phpmailer) {
+    $settings = galleria_get_smtp_settings();
+    if (!$settings) {
+        return;
+    }
+    
+    $phpmailer->isSMTP();
+    $phpmailer->Host       = $settings['host'];
+    $phpmailer->SMTPAuth   = true;
+    $phpmailer->Port       = $settings['port'];
+    $phpmailer->Username   = $settings['username'];
+    $phpmailer->Password   = $settings['password'];
+    $phpmailer->SMTPSecure = $settings['secure'];
+    $phpmailer->From       = $settings['from_email'];
+    $phpmailer->FromName   = $settings['from_name'];
+    
+    // Enable SMTP debug if enabled
+    if (!empty($settings['debug'])) {
+        $phpmailer->SMTPDebug = 1;
+        $phpmailer->Debugoutput = function($str, $level) {
+            error_log("SMTP Debug Level $level: $str");
+        };
+    }
+    
+    // Additional SMTP options for better compatibility
+    $phpmailer->SMTPOptions = array(
+        'ssl' => array(
+            'verify_peer' => false,
+            'verify_peer_name' => false,
+            'allow_self_signed' => true
+        )
+    );
+}
+add_action('phpmailer_init', 'galleria_configure_smtp');
+
+/**
+ * Set default From email and name for all emails
+ */
+function galleria_wp_mail_from($original_email_address) {
+    $settings = galleria_get_smtp_settings();
+    if ($settings && !empty($settings['from_email'])) {
+        return $settings['from_email'];
+    }
+    return $original_email_address;
+}
+
+function galleria_wp_mail_from_name($original_email_from) {
+    $settings = galleria_get_smtp_settings();
+    if ($settings && !empty($settings['from_name'])) {
+        return $settings['from_name'];
+    }
+    return $original_email_from;
+}
+
+add_filter('wp_mail_from', 'galleria_wp_mail_from');
+add_filter('wp_mail_from_name', 'galleria_wp_mail_from_name');
+
+/**
+ * SMTP Error Handling and Logging
+ */
+function galleria_wp_mail_failed($wp_error) {
+    error_log('WordPress Email Failed: ' . $wp_error->get_error_message());
+    
+    // Store error in transient for admin notice (if needed)
+    if (is_admin()) {
+        set_transient('galleria_smtp_error', $wp_error->get_error_message(), 60);
+    }
+}
+add_action('wp_mail_failed', 'galleria_wp_mail_failed');
+
+/**
+ * Test email function for admin (optional)
+ */
+function galleria_smtp_test_email() {
+    // Only allow for administrators
+    if (!current_user_can('administrator')) {
+        wp_die('Unauthorized');
+    }
+    
+    if (!isset($_GET['galleria_test_email']) || !wp_verify_nonce($_GET['_wpnonce'], 'galleria_test_email')) {
+        return;
+    }
+    
+    $settings = galleria_get_smtp_settings();
+    
+    // Robust fallback logic for recipient email
+    $to = '';
+    $email_source = 'unknown';
+    
+    if ($settings) {
+        // Priority 1: from_email if set and valid
+        if (!empty($settings['from_email']) && is_email($settings['from_email'])) {
+            $to = $settings['from_email'];
+            $email_source = 'SMTP from_email';
+        }
+        // Priority 2: username if valid email
+        elseif (!empty($settings['username']) && is_email($settings['username'])) {
+            $to = $settings['username'];
+            $email_source = 'SMTP username';
+        }
+    }
+    
+    // Priority 3: WordPress admin email
+    if (empty($to)) {
+        $admin_email = get_option('admin_email');
+        if (!empty($admin_email) && is_email($admin_email)) {
+            $to = $admin_email;
+            $email_source = 'WordPress admin email';
+        }
+    }
+    
+    // Priority 4: Current user email
+    if (empty($to)) {
+        $current_user = wp_get_current_user();
+        if ($current_user->user_email && is_email($current_user->user_email)) {
+            $to = $current_user->user_email;
+            $email_source = 'Current user email';
+        }
+    }
+    
+    // Final validation
+    if (empty($to) || !is_email($to)) {
+        error_log('SMTP Test Error: No valid recipient email found. Settings: ' . print_r($settings, true));
+        wp_redirect(add_query_arg(array('smtp_test' => 'failed', 'smtp_error' => 'no_recipient'), wp_get_referer()));
+        exit;
+    }
+    
+    // Log test attempt
+    error_log('SMTP Test: Sending to ' . $to . ' (source: ' . $email_source . ')');
+    
+    $subject = 'Test Email - Galleria Catanzaro SMTP';
+    $message = 'Questo è un test per verificare che la configurazione SMTP funzioni correttamente.' . "\n\n";
+    $message .= 'Destinatario: ' . $to . ' (' . $email_source . ')' . "\n";
+    $message .= 'Configurazione utilizzata: ' . ($settings ? $settings['source'] : 'nessuna') . "\n";
+    
+    if ($settings) {
+        $message .= 'Host: ' . $settings['host'] . "\n";
+        $message .= 'Porta: ' . $settings['port'] . "\n";
+        $message .= 'Sicurezza: ' . $settings['secure'] . "\n";
+        $message .= 'Username: ' . $settings['username'] . "\n";
+    }
+    
+    $message .= 'Data/Ora: ' . current_time('mysql') . "\n";
+    $message .= 'IP Server: ' . ($_SERVER['SERVER_ADDR'] ?? 'unknown') . "\n";
+    
+    $headers = array('Content-Type: text/plain; charset=UTF-8');
+    
+    $sent = wp_mail($to, $subject, $message, $headers);
+    
+    // Log result
+    if ($sent) {
+        error_log('SMTP Test: Email sent successfully to ' . $to);
+        wp_redirect(add_query_arg(array('smtp_test' => 'success', 'test_email' => urlencode($to)), wp_get_referer()));
+    } else {
+        error_log('SMTP Test: Failed to send email to ' . $to);
+        wp_redirect(add_query_arg('smtp_test', 'failed', wp_get_referer()));
+    }
+    exit;
+}
+add_action('admin_init', 'galleria_smtp_test_email');
+
+/**
+ * Add SMTP Settings menu to WordPress admin
+ */
+function galleria_smtp_admin_menu() {
+    add_options_page(
+        'SMTP Settings',
+        'SMTP Settings', 
+        'manage_options',
+        'galleria-smtp-settings',
+        'galleria_smtp_settings_page'
+    );
+}
+add_action('admin_menu', 'galleria_smtp_admin_menu');
+
+/**
+ * Admin notice for SMTP configuration
+ */
+function galleria_smtp_admin_notice() {
+    $settings = galleria_get_smtp_settings();
+    
+    // Show configuration notice if SMTP is not configured
+    if (!$settings && current_user_can('administrator')) {
+        echo '<div class="notice notice-warning is-dismissible">';
+        echo '<p><strong>Galleria SMTP:</strong> Configurazione email non trovata. ';
+        echo '<a href="' . admin_url('options-general.php?page=galleria-smtp-settings') . '">Configura SMTP</a> ';
+        echo 'per garantire la consegna delle email del form di contatto.</p>';
+        echo '</div>';
+    }
+    
+    // Show configuration source info
+    if ($settings && isset($_GET['page']) && $_GET['page'] === 'galleria-smtp-settings') {
+        $source = $settings['source'] === 'constants' ? 'file wp-config.php' : 'database WordPress';
+        echo '<div class="notice notice-info">';
+        echo '<p><strong>Info:</strong> Configurazione SMTP attiva dal ' . $source . '.</p>';
+        if ($settings['source'] === 'constants') {
+            echo '<p><em>Le impostazioni da wp-config.php hanno priorità su quelle del database.</em></p>';
+        }
+        echo '</div>';
+    }
+    
+    // Show test results
+    if (isset($_GET['smtp_test'])) {
+        if ($_GET['smtp_test'] === 'success') {
+            echo '<div class="notice notice-success is-dismissible"><p><strong>Email Test:</strong> Email inviata con successo!</p></div>';
+        } else {
+            echo '<div class="notice notice-error is-dismissible"><p><strong>Email Test:</strong> Invio fallito. Controlla la configurazione SMTP.</p></div>';
+        }
+    }
+    
+    // Show settings saved message
+    if (isset($_GET['settings-updated']) && $_GET['settings-updated'] === 'true' && isset($_GET['page']) && $_GET['page'] === 'galleria-smtp-settings') {
+        echo '<div class="notice notice-success is-dismissible"><p><strong>Impostazioni salvate!</strong> Puoi testare l\'invio email.</p></div>';
+    }
+    
+    // Show SMTP errors
+    $error = get_transient('galleria_smtp_error');
+    if ($error) {
+        echo '<div class="notice notice-error is-dismissible">';
+        echo '<p><strong>SMTP Error:</strong> ' . esc_html($error) . '</p>';
+        echo '</div>';
+        delete_transient('galleria_smtp_error');
+    }
+}
+add_action('admin_notices', 'galleria_smtp_admin_notice');
+
+/**
+ * Add SMTP test link to admin bar (for administrators)
+ */
+function galleria_smtp_admin_bar($wp_admin_bar) {
+    if (!current_user_can('administrator')) {
+        return;
+    }
+    
+    $settings = galleria_get_smtp_settings();
+    if (!$settings) {
+        return;
+    }
+    
+    $test_url = wp_nonce_url(add_query_arg('galleria_test_email', '1'), 'galleria_test_email');
+    
+    $wp_admin_bar->add_node(array(
+        'id'    => 'smtp-test',
+        'title' => 'Test SMTP',
+        'href'  => $test_url,
+        'meta'  => array(
+            'title' => 'Invia email di test per verificare configurazione SMTP'
+        )
+    ));
+}
+add_action('admin_bar_menu', 'galleria_smtp_admin_bar', 999);
+
+/**
+ * Handle SMTP Settings form submissions (before any output)
+ */
+function galleria_handle_smtp_settings() {
+    // Only process on our admin page
+    if (!isset($_GET['page']) || $_GET['page'] !== 'galleria-smtp-settings') {
+        return;
+    }
+    
+    // Handle form submission
+    if (isset($_POST['submit']) && wp_verify_nonce($_POST['smtp_nonce'], 'galleria_smtp_settings')) {
+        $settings = array(
+            'host' => sanitize_text_field($_POST['smtp_host']),
+            'port' => intval($_POST['smtp_port']),
+            'secure' => sanitize_text_field($_POST['smtp_secure']),
+            'username' => sanitize_email($_POST['smtp_username']),
+            'password' => galleria_encrypt_password($_POST['smtp_password']),
+            'from_email' => sanitize_email($_POST['smtp_from_email']),
+            'from_name' => sanitize_text_field($_POST['smtp_from_name']),
+            'debug' => isset($_POST['smtp_debug']) ? true : false
+        );
+        
+        update_option('galleria_smtp_settings', $settings);
+        wp_redirect(add_query_arg(array('page' => 'galleria-smtp-settings', 'settings-updated' => 'true'), admin_url('options-general.php')));
+        exit;
+    }
+    
+    // Handle reset
+    if (isset($_POST['reset']) && wp_verify_nonce($_POST['smtp_nonce'], 'galleria_smtp_settings')) {
+        delete_option('galleria_smtp_settings');
+        wp_redirect(add_query_arg(array('page' => 'galleria-smtp-settings', 'reset' => 'true'), admin_url('options-general.php')));
+        exit;
+    }
+}
+add_action('admin_init', 'galleria_handle_smtp_settings');
+
+/**
+ * SMTP Settings Page
+ */
+function galleria_smtp_settings_page() {
+    
+    $current_settings = galleria_get_smtp_settings();
+    $db_settings = get_option('galleria_smtp_settings', array());
+    
+    // Get presets
+    $presets = array(
+        'gmail' => array(
+            'name' => 'Gmail',
+            'host' => 'smtp.gmail.com',
+            'port' => 587,
+            'secure' => 'tls'
+        ),
+        'outlook' => array(
+            'name' => 'Outlook/Hotmail',
+            'host' => 'smtp-mail.outlook.com',
+            'port' => 587,
+            'secure' => 'tls'
+        ),
+        'yahoo' => array(
+            'name' => 'Yahoo Mail',
+            'host' => 'smtp.mail.yahoo.com',
+            'port' => 587,
+            'secure' => 'tls'
+        )
+    );
+    
+    ?>
+    <div class="wrap">
+        <h1>📧 SMTP Settings - Galleria Catanzaro</h1>
+        
+        <?php if (isset($_GET['reset'])): ?>
+            <div class="notice notice-success is-dismissible">
+                <p><strong>Configurazione SMTP eliminata!</strong></p>
+            </div>
+        <?php endif; ?>
+        
+        <div class="smtp-settings-container" style="display: flex; gap: 20px;">
+            <div class="smtp-form" style="flex: 2;">
+                <form method="post" action="">
+                    <?php wp_nonce_field('galleria_smtp_settings', 'smtp_nonce'); ?>
+                    
+                    <table class="form-table">
+                        <tr>
+                            <th scope="row">
+                                <label>Preset Rapidi</label>
+                            </th>
+                            <td>
+                                <select id="smtp-preset" onchange="applyPreset()">
+                                    <option value="">Seleziona preset...</option>
+                                    <?php foreach ($presets as $key => $preset): ?>
+                                        <option value="<?php echo $key; ?>"><?php echo esc_html($preset['name']); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <p class="description">Seleziona un preset per compilare automaticamente i campi</p>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th scope="row">
+                                <label for="smtp_host">Host SMTP *</label>
+                            </th>
+                            <td>
+                                <input type="text" id="smtp_host" name="smtp_host" 
+                                       value="<?php echo esc_attr($db_settings['host'] ?? ''); ?>" 
+                                       class="regular-text" required
+                                       <?php echo ($current_settings && $current_settings['source'] === 'constants') ? 'readonly' : ''; ?>>
+                                <p class="description">Es: smtp.gmail.com</p>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th scope="row">
+                                <label for="smtp_port">Porta *</label>
+                            </th>
+                            <td>
+                                <input type="number" id="smtp_port" name="smtp_port" 
+                                       value="<?php echo esc_attr($db_settings['port'] ?? '587'); ?>" 
+                                       min="1" max="65535" required
+                                       <?php echo ($current_settings && $current_settings['source'] === 'constants') ? 'readonly' : ''; ?>>
+                                <p class="description">Solitamente 587 (TLS) o 465 (SSL)</p>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th scope="row">
+                                <label for="smtp_secure">Crittografia *</label>
+                            </th>
+                            <td>
+                                <select id="smtp_secure" name="smtp_secure" required
+                                        <?php echo ($current_settings && $current_settings['source'] === 'constants') ? 'disabled' : ''; ?>>
+                                    <option value="tls" <?php selected($db_settings['secure'] ?? 'tls', 'tls'); ?>>TLS</option>
+                                    <option value="ssl" <?php selected($db_settings['secure'] ?? '', 'ssl'); ?>>SSL</option>
+                                </select>
+                                <p class="description">TLS è raccomandato per la maggior parte dei provider</p>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th scope="row">
+                                <label for="smtp_username">Username *</label>
+                            </th>
+                            <td>
+                                <input type="email" id="smtp_username" name="smtp_username" 
+                                       value="<?php echo esc_attr($db_settings['username'] ?? ''); ?>" 
+                                       class="regular-text" required
+                                       <?php echo ($current_settings && $current_settings['source'] === 'constants') ? 'readonly' : ''; ?>>
+                                <p class="description">La tua email completa (es: nome@gmail.com)</p>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th scope="row">
+                                <label for="smtp_password">Password *</label>
+                            </th>
+                            <td>
+                                <input type="password" id="smtp_password" name="smtp_password" 
+                                       value="" class="regular-text" required
+                                       placeholder="<?php echo !empty($db_settings['password']) ? '••••••••••••••••' : 'Inserisci password...'; ?>"
+                                       <?php echo ($current_settings && $current_settings['source'] === 'constants') ? 'readonly' : ''; ?>>
+                                <p class="description">
+                                    <strong>Per Gmail:</strong> Usa una "App Password", non la password normale.<br>
+                                    <a href="https://myaccount.google.com/apppasswords" target="_blank">Genera App Password per Gmail</a>
+                                </p>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th scope="row">
+                                <label for="smtp_from_email">Email Mittente</label>
+                            </th>
+                            <td>
+                                <input type="email" id="smtp_from_email" name="smtp_from_email" 
+                                       value="<?php echo esc_attr($db_settings['from_email'] ?? ''); ?>" 
+                                       class="regular-text"
+                                       <?php echo ($current_settings && $current_settings['source'] === 'constants') ? 'readonly' : ''; ?>>
+                                <p class="description">Lascia vuoto per usare lo username</p>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th scope="row">
+                                <label for="smtp_from_name">Nome Mittente</label>
+                            </th>
+                            <td>
+                                <input type="text" id="smtp_from_name" name="smtp_from_name" 
+                                       value="<?php echo esc_attr($db_settings['from_name'] ?? 'Galleria Adalberto Catanzaro'); ?>" 
+                                       class="regular-text"
+                                       <?php echo ($current_settings && $current_settings['source'] === 'constants') ? 'readonly' : ''; ?>>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th scope="row">
+                                <label for="smtp_debug">Debug SMTP</label>
+                            </th>
+                            <td>
+                                <label>
+                                    <input type="checkbox" id="smtp_debug" name="smtp_debug" 
+                                           <?php checked($db_settings['debug'] ?? false); ?>
+                                           <?php echo ($current_settings && $current_settings['source'] === 'constants') ? 'disabled' : ''; ?>>
+                                    Abilita debug SMTP (per troubleshooting)
+                                </label>
+                                <p class="description">I log di debug verranno scritti nel file di log di WordPress</p>
+                            </td>
+                        </tr>
+                    </table>
+                    
+                    <?php if (!$current_settings || $current_settings['source'] !== 'constants'): ?>
+                        <p class="submit">
+                            <input type="submit" name="submit" class="button-primary" value="Salva Configurazione">
+                            <input type="submit" name="reset" class="button" value="Reset Configurazione" 
+                                   onclick="return confirm('Sei sicuro di voler eliminare la configurazione SMTP?')">
+                        </p>
+                    <?php else: ?>
+                        <div class="notice notice-info inline">
+                            <p><strong>Nota:</strong> La configurazione è definita nel file wp-config.php e ha priorità su queste impostazioni.</p>
+                        </div>
+                    <?php endif; ?>
+                </form>
+            </div>
+            
+            <div class="smtp-info" style="flex: 1; background: #f9f9f9; padding: 20px; border-radius: 5px;">
+                <h3>📋 Status Configurazione</h3>
+                <?php if ($current_settings): ?>
+                    <div class="smtp-status" style="padding: 10px; background: #d1e7dd; border-left: 4px solid #0f5132; margin: 10px 0;">
+                        <strong>✅ SMTP Configurato</strong><br>
+                        <small>
+                            Host: <?php echo esc_html($current_settings['host']); ?><br>
+                            Porta: <?php echo esc_html($current_settings['port']); ?><br>
+                            Username: <?php echo esc_html($current_settings['username']); ?><br>
+                            Fonte: <?php echo esc_html($current_settings['source'] === 'constants' ? 'wp-config.php' : 'Database'); ?>
+                        </small>
+                    </div>
+                    
+                    <a href="<?php echo wp_nonce_url(add_query_arg('galleria_test_email', '1'), 'galleria_test_email'); ?>" 
+                       class="button button-secondary" style="width: 100%; text-align: center; margin: 10px 0;">
+                        📤 Invia Test Email
+                    </a>
+                <?php else: ?>
+                    <div class="smtp-status" style="padding: 10px; background: #f8d7da; border-left: 4px solid #842029; margin: 10px 0;">
+                        <strong>❌ SMTP Non Configurato</strong><br>
+                        <small>Configura SMTP per garantire la consegna delle email</small>
+                    </div>
+                <?php endif; ?>
+                
+                <h4>🔧 Provider Popolari</h4>
+                <ul style="font-size: 12px;">
+                    <li><strong>Gmail:</strong> smtp.gmail.com:587 (TLS)</li>
+                    <li><strong>Outlook:</strong> smtp-mail.outlook.com:587 (TLS)</li>
+                    <li><strong>Yahoo:</strong> smtp.mail.yahoo.com:587 (TLS)</li>
+                </ul>
+                
+                <h4>💡 Suggerimenti</h4>
+                <ul style="font-size: 12px;">
+                    <li>Per Gmail, usa sempre una "App Password"</li>
+                    <li>Attiva la verifica a 2 fattori</li>
+                    <li>Testa sempre dopo la configurazione</li>
+                    <li>Controlla la cartella spam se non ricevi l'email</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    const presets = <?php echo json_encode($presets); ?>;
+    
+    function applyPreset() {
+        const select = document.getElementById('smtp-preset');
+        const presetKey = select.value;
+        
+        if (presetKey && presets[presetKey]) {
+            const preset = presets[presetKey];
+            document.getElementById('smtp_host').value = preset.host;
+            document.getElementById('smtp_port').value = preset.port;
+            document.getElementById('smtp_secure').value = preset.secure;
+        }
+    }
+    </script>
+    
+    <style>
+    .smtp-settings-container .form-table th {
+        width: 150px;
+    }
+    .smtp-settings-container input[readonly],
+    .smtp-settings-container select[disabled] {
+        background-color: #f0f0f0;
+        color: #666;
+    }
+    .smtp-info h3, .smtp-info h4 {
+        margin-top: 0;
+    }
+    .smtp-info ul {
+        margin: 5px 0;
+        padding-left: 20px;
+    }
+    </style>
+    <?php
+}
+
+/**
  * Include additional files
  */
 require_once get_template_directory() . '/inc/acf-fields.php';
