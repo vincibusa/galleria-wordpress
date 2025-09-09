@@ -1,4 +1,4 @@
-<?php
+ <?php
 /**
  * Galleria Adalberto Catanzaro Theme Functions
  */
@@ -274,6 +274,28 @@ function galleria_register_post_types() {
         'rewrite' => array('slug' => 'publications'),
         'supports' => array('title', 'editor', 'thumbnail', 'excerpt'),
         'menu_icon' => 'dashicons-book',
+        'show_in_rest' => true,
+    ));
+
+    // Projects Custom Post Type
+    register_post_type('project', array(
+        'labels' => array(
+            'name' => 'Progetti',
+            'singular_name' => 'Progetto',
+            'add_new' => 'Aggiungi Progetto',
+            'add_new_item' => 'Aggiungi Nuovo Progetto',
+            'edit_item' => 'Modifica Progetto',
+            'new_item' => 'Nuovo Progetto',
+            'view_item' => 'Visualizza Progetto',
+            'search_items' => 'Cerca Progetti',
+            'not_found' => 'Nessun progetto trovato',
+            'not_found_in_trash' => 'Nessun progetto nel cestino',
+        ),
+        'public' => true,
+        'has_archive' => true,
+        'rewrite' => array('slug' => 'projects'),
+        'supports' => array('title', 'editor', 'thumbnail', 'excerpt'),
+        'menu_icon' => 'dashicons-portfolio',
         'show_in_rest' => true,
     ));
 }
