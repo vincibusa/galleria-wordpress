@@ -13,9 +13,23 @@ get_header(); ?>
             <!-- filters removed -->
         </header>
 
-        <?php if (have_posts()) : ?>
+        <?php
+        // Custom query: show ALL exhibitions ordered chronologically by ACF start_date.
+        // Assumption: ACF `start_date` is stored in `YYYY-MM-DD` or `YYYYMMDD` format so string ordering works.
+        $args = array(
+            'post_type' => 'exhibition',
+            'posts_per_page' => -1,
+            'meta_key' => 'start_date',
+            // order by start_date descending so newest exhibitions appear first;
+            // keep post date DESC as secondary fallback
+            'orderby' => array( 'meta_value' => 'DESC', 'date' => 'DESC' ),
+        );
+
+        $exhibitions = new WP_Query($args);
+
+        if ($exhibitions->have_posts()) : ?>
             <div class="exhibitions-grid grid grid-cols-1 md:grid-cols-3 gap-8">
-                <?php while (have_posts()) : the_post(); 
+                <?php while ($exhibitions->have_posts()) : $exhibitions->the_post(); 
                     $artist = get_field('artist');
                     $curator = get_field('curator');
                     $venue = get_field('venue');
@@ -100,12 +114,8 @@ get_header(); ?>
             </div>
 
             <?php
-            // Pagination
-            the_posts_pagination(array(
-                'prev_text' => __('Precedente', 'galleria'),
-                'next_text' => __('Successivo', 'galleria'),
-                'before_page_number' => '<span class="meta-nav screen-reader-text">' . __('Pagina', 'galleria') . ' </span>',
-            ));
+            // Reset postdata from custom query
+            wp_reset_postdata();
             ?>
 
         <?php else : ?>

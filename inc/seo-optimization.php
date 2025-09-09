@@ -12,11 +12,13 @@ if (!defined('ABSPATH')) {
  * Add custom meta tags to head
  */
 function galleria_add_meta_tags() {
+    $seo_settings = galleria_get_seo_settings();
+    
     // Generator tag
     echo '<meta name="generator" content="WordPress ' . get_bloginfo('version') . ' - Galleria Theme">' . "\n";
     
     // Author meta
-    echo '<meta name="author" content="Galleria Adalberto Catanzaro">' . "\n";
+    echo '<meta name="author" content="' . esc_attr($seo_settings['meta_author']) . '">' . "\n";
     
     // Robots meta for specific pages
     if (is_404()) {
@@ -28,8 +30,8 @@ function galleria_add_meta_tags() {
     echo '<meta http-equiv="content-language" content="it">' . "\n";
     
     // Theme color for mobile browsers
-    echo '<meta name="theme-color" content="#111827">' . "\n";
-    echo '<meta name="msapplication-navbutton-color" content="#111827">' . "\n";
+    echo '<meta name="theme-color" content="' . esc_attr($seo_settings['theme_color']) . '">' . "\n";
+    echo '<meta name="msapplication-navbutton-color" content="' . esc_attr($seo_settings['theme_color']) . '">' . "\n";
     echo '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">' . "\n";
 }
 add_action('wp_head', 'galleria_add_meta_tags', 1);
@@ -196,38 +198,60 @@ add_action('wp_head', 'galleria_add_post_structured_data');
  * Custom title tags for better SEO
  */
 function galleria_custom_title($title, $sep, $seplocation) {
+    $seo_settings = galleria_get_seo_settings();
+    
     if (is_singular('artist')) {
-        $title = get_the_title() . ' - Artista | Galleria Adalberto Catanzaro';
+        $template = $seo_settings['artist_title_template'];
+        $title = str_replace(
+            array('{artist_name}', '{site_name}'),
+            array(get_the_title(), $seo_settings['site_name']),
+            $template
+        );
     } elseif (is_singular('exhibition')) {
         $artist = get_field('artist');
         $year = get_the_date('Y');
-        $title = get_the_title();
-        if ($artist) {
-            $title .= ' - ' . $artist;
-        }
-        $title .= ' (' . $year . ') | Galleria Adalberto Catanzaro';
+        $template = $seo_settings['exhibition_title_template'];
+        $title = str_replace(
+            array('{exhibition_title}', '{artist_name}', '{year}', '{site_name}'),
+            array(get_the_title(), $artist ?: '', $year, $seo_settings['site_name']),
+            $template
+        );
     } elseif (is_post_type_archive('artist')) {
-        $title = 'Artisti - Arte Contemporanea | Galleria Adalberto Catanzaro Palermo';
+        $title = $seo_settings['artists_page_title'];
     } elseif (is_post_type_archive('exhibition')) {
-        $title = 'Mostre - Arte Contemporanea | Galleria Adalberto Catanzaro Palermo';
+        $title = $seo_settings['exhibitions_page_title'];
     }
     
     return $title;
 }
 add_filter('wp_title', 'galleria_custom_title', 10, 3);
 add_filter('document_title_parts', function($parts) {
+    $seo_settings = galleria_get_seo_settings();
+    
     if (is_singular('artist')) {
-        $parts['title'] = get_the_title() . ' - Artista';
-        $parts['site'] = 'Galleria Adalberto Catanzaro';
+        $template = $seo_settings['artist_title_template'];
+        $full_title = str_replace(
+            array('{artist_name}', '{site_name}'),
+            array(get_the_title(), $seo_settings['site_name']),
+            $template
+        );
+        // Split title and site for WordPress structure
+        $title_parts = explode(' | ', $full_title, 2);
+        $parts['title'] = $title_parts[0];
+        $parts['site'] = isset($title_parts[1]) ? $title_parts[1] : $seo_settings['site_name'];
     } elseif (is_singular('exhibition')) {
         $artist = get_field('artist');
         $year = get_the_date('Y');
-        $parts['title'] = get_the_title();
-        if ($artist) {
-            $parts['title'] .= ' - ' . $artist;
-        }
-        $parts['title'] .= ' (' . $year . ')';
-        $parts['site'] = 'Galleria Adalberto Catanzaro';
+        $template = $seo_settings['exhibition_title_template'];
+        $full_title = str_replace(
+            array('{exhibition_title}', '{artist_name}', '{year}', '{site_name}'),
+            array(get_the_title(), $artist ?: '', $year, $seo_settings['site_name']),
+            $template
+        );
+        // Split title and site for WordPress structure
+        $title_parts = explode(' | ', $full_title, 2);
+        $parts['title'] = $title_parts[0];
+        $parts['site'] = isset($title_parts[1]) ? $title_parts[1] : $seo_settings['site_name'];
     }
     return $parts;
 });
@@ -236,25 +260,34 @@ add_filter('document_title_parts', function($parts) {
  * Custom meta descriptions
  */
 function galleria_custom_meta_description() {
+    $seo_settings = galleria_get_seo_settings();
+    
     if (is_singular('artist')) {
         $biography = get_field('biography');
-        $description = $biography ? wp_trim_words($biography, 25) : get_the_excerpt();
-        $description = 'Scopri le opere di ' . get_the_title() . ', artista contemporaneo. ' . $description . ' | Galleria Adalberto Catanzaro, Palermo.';
+        $bio_excerpt = $biography ? wp_trim_words($biography, 25) : get_the_excerpt();
+        $template = $seo_settings['artist_description_template'];
+        $description = str_replace(
+            array('{artist_name}', '{biography}', '{site_name}'),
+            array(get_the_title(), $bio_excerpt, $seo_settings['site_name']),
+            $template
+        );
         echo '<meta name="description" content="' . esc_attr($description) . '">' . "\n";
     } elseif (is_singular('exhibition')) {
         $artist = get_field('artist');
         $year = get_the_date('Y');
-        $description = get_the_excerpt() ?: 'Mostra di arte contemporanea';
-        $description = 'Mostra "' . get_the_title() . '"';
-        if ($artist) {
-            $description .= ' di ' . $artist;
-        }
-        $description .= ' (' . $year . ') presso la Galleria Adalberto Catanzaro, Palermo. ' . $description;
+        $template = $seo_settings['exhibition_description_template'];
+        $description = str_replace(
+            array('{exhibition_title}', '{artist_name}', '{year}', '{site_name}'),
+            array(get_the_title(), $artist ?: '', $year, $seo_settings['site_name']),
+            $template
+        );
         echo '<meta name="description" content="' . esc_attr($description) . '">' . "\n";
     } elseif (is_post_type_archive('artist')) {
-        echo '<meta name="description" content="Scopri gli artisti contemporanei rappresentati dalla Galleria Adalberto Catanzaro di Palermo. Arte Povera, Transavanguardia e ricerca artistica contemporanea.">' . "\n";
+        echo '<meta name="description" content="' . esc_attr($seo_settings['artists_page_description']) . '">' . "\n";
     } elseif (is_post_type_archive('exhibition')) {
-        echo '<meta name="description" content="Mostre di arte contemporanea presso la Galleria Adalberto Catanzaro di Palermo. Esposizioni di artisti italiani e internazionali, Arte Povera e Transavanguardia.">' . "\n";
+        echo '<meta name="description" content="' . esc_attr($seo_settings['exhibitions_page_description']) . '">' . "\n";
+    } elseif (is_front_page()) {
+        echo '<meta name="description" content="' . esc_attr($seo_settings['homepage_description']) . '">' . "\n";
     }
 }
 add_action('wp_head', 'galleria_custom_meta_description', 5);
@@ -263,12 +296,14 @@ add_action('wp_head', 'galleria_custom_meta_description', 5);
  * Open Graph meta tags
  */
 function galleria_add_og_tags() {
+    $seo_settings = galleria_get_seo_settings();
+    
     if (is_singular()) {
         echo '<meta property="og:type" content="article">' . "\n";
         echo '<meta property="og:title" content="' . esc_attr(get_the_title()) . '">' . "\n";
         echo '<meta property="og:description" content="' . esc_attr(get_the_excerpt()) . '">' . "\n";
         echo '<meta property="og:url" content="' . esc_url(get_permalink()) . '">' . "\n";
-        echo '<meta property="og:site_name" content="Galleria Adalberto Catanzaro">' . "\n";
+        echo '<meta property="og:site_name" content="' . esc_attr($seo_settings['site_name']) . '">' . "\n";
         
         if (has_post_thumbnail()) {
             $image = get_the_post_thumbnail_url(null, 'large');
@@ -278,10 +313,10 @@ function galleria_add_og_tags() {
         }
     } elseif (is_front_page()) {
         echo '<meta property="og:type" content="website">' . "\n";
-        echo '<meta property="og:title" content="Galleria Adalberto Catanzaro - Arte Contemporanea Palermo">' . "\n";
-        echo '<meta property="og:description" content="Galleria d\'arte contemporanea a Palermo dal 2014. Mostre di artisti italiani e internazionali, Arte Povera, Transavanguardia.">' . "\n";
+        echo '<meta property="og:title" content="' . esc_attr($seo_settings['homepage_title']) . '">' . "\n";
+        echo '<meta property="og:description" content="' . esc_attr($seo_settings['homepage_description']) . '">' . "\n";
         echo '<meta property="og:url" content="' . esc_url(home_url()) . '">' . "\n";
-        echo '<meta property="og:site_name" content="Galleria Adalberto Catanzaro">' . "\n";
+        echo '<meta property="og:site_name" content="' . esc_attr($seo_settings['site_name']) . '">' . "\n";
     }
     
     // Twitter Card tags

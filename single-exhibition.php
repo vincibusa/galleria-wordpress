@@ -15,9 +15,7 @@ get_header(); ?>
         $end_date = get_field('end_date');
         $featured = get_field('featured');
         
-        // Get exhibition status
-        $status_terms = get_the_terms(get_the_ID(), 'exhibition_status');
-        $status = $status_terms && !is_wp_error($status_terms) ? $status_terms[0] : null;
+    // ...existing code... (status removed)
     ?>
         <article id="post-<?php the_ID(); ?>" <?php post_class('exhibition-single'); ?>>
             <!-- Exhibition Hero Section -->
@@ -29,12 +27,7 @@ get_header(); ?>
                             'class' => 'w-full h-full object-cover'
                         )); ?>
                         
-                        <!-- Status Badge -->
-                        <?php if ($status) : ?>
-                            <div class="status-badge <?php echo esc_attr($status->slug); ?>">
-                                <?php echo esc_html($status->name); ?>
-                            </div>
-                        <?php endif; ?>
+                        <!-- status badge removed -->
                         
                         <!-- Hero Content Overlay -->
                         <div class="hero-content">
@@ -75,11 +68,7 @@ get_header(); ?>
                     <div class="hero-no-image py-16 bg-gray-100">
                         <div class="container">
                             <div class="hero-info max-w-3xl">
-                                <?php if ($status) : ?>
-                                    <div class="status-badge-standalone <?php echo esc_attr($status->slug); ?>">
-                                        <?php echo esc_html($status->name); ?>
-                                    </div>
-                                <?php endif; ?>
+                                <!-- status badge removed -->
                                 
                                 <div class="hero-meta text-gray-600">
                                     <?php if ($location) : ?>
@@ -177,14 +166,7 @@ get_header(); ?>
                                             </div>
                                         <?php endif; ?>
                                         
-                                        <?php if ($status) : ?>
-                                            <div class="info-item">
-                                                <strong><?php _e('Status:', 'galleria'); ?></strong>
-                                                <span class="status-text <?php echo esc_attr($status->slug); ?>">
-                                                    <?php echo esc_html($status->name); ?>
-                                                </span>
-                                            </div>
-                                        <?php endif; ?>
+                                        <!-- status info removed -->
                                     </div>
                                 </div>
                                 
@@ -300,54 +282,6 @@ get_header(); ?>
     object-fit: cover;
 }
 
-.status-badge {
-    position: absolute;
-    top: 2rem;
-    right: 2rem;
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-radius: 0.25rem;
-    background-color: rgba(255,255,255,0.9);
-    color: #374151;
-    backdrop-filter: blur(4px);
-    z-index: 10;
-}
-
-.status-badge.current {
-    background-color: rgba(34, 197, 94, 0.9);
-    color: white;
-}
-
-.status-badge.past {
-    background-color: rgba(107, 114, 128, 0.9);
-    color: white;
-}
-
-.status-badge-standalone {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-radius: 0.25rem;
-    margin-bottom: 1rem;
-    background-color: #f3f4f6;
-    color: #374151;
-}
-
-.status-badge-standalone.current {
-    background-color: #22c55e;
-    color: white;
-}
-
-.status-badge-standalone.past {
-    background-color: #6b7280;
-    color: white;
-}
 
 .hero-content {
     position: absolute;
@@ -427,15 +361,7 @@ get_header(); ?>
     color: #6b7280;
 }
 
-.status-text.current {
-    color: #22c55e;
-    font-weight: 500;
-}
-
-.status-text.past {
-    color: #6b7280;
-    font-weight: 500;
-}
+/* status styles removed */
 
 .contact-info .font-medium {
     margin-bottom: 0.5rem;

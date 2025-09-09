@@ -1304,3 +1304,263 @@ function galleria_handle_contact_form() {
 }
 add_action('admin_post_galleria_contact_form', 'galleria_handle_contact_form');
 add_action('admin_post_nopriv_galleria_contact_form', 'galleria_handle_contact_form');
+
+/**
+ * SEO Settings Management
+ * Gestione SEO dalla dashboard WordPress
+ */
+
+/**
+ * Add SEO Settings menu to WordPress admin
+ */
+function galleria_seo_admin_menu() {
+    add_options_page(
+        'Impostazioni SEO Galleria',
+        'SEO Galleria', 
+        'manage_options',
+        'galleria-seo-settings',
+        'galleria_seo_settings_page'
+    );
+}
+add_action('admin_menu', 'galleria_seo_admin_menu');
+
+/**
+ * Get SEO settings with defaults
+ */
+function galleria_get_seo_settings() {
+    $defaults = array(
+        'site_name' => 'Galleria Adalberto Catanzaro',
+        'site_tagline' => 'Arte Contemporanea Palermo',
+        'meta_author' => 'Galleria Adalberto Catanzaro',
+        'theme_color' => '#111827',
+        'homepage_title' => 'Galleria Adalberto Catanzaro - Arte Contemporanea Palermo',
+        'homepage_description' => 'Galleria d\'arte contemporanea a Palermo dal 2014. Mostre di artisti italiani e internazionali, Arte Povera, Transavanguardia.',
+        'artists_page_title' => 'Artisti - Arte Contemporanea | Galleria Adalberto Catanzaro Palermo',
+        'artists_page_description' => 'Scopri gli artisti contemporanei rappresentati dalla Galleria Adalberto Catanzaro di Palermo. Arte Povera, Transavanguardia e ricerca artistica contemporanea.',
+        'exhibitions_page_title' => 'Mostre - Arte Contemporanea | Galleria Adalberto Catanzaro Palermo',
+        'exhibitions_page_description' => 'Mostre di arte contemporanea presso la Galleria Adalberto Catanzaro di Palermo. Esposizioni di artisti italiani e internazionali, Arte Povera e Transavanguardia.',
+        'artist_title_template' => '{artist_name} - Artista | {site_name}',
+        'exhibition_title_template' => '{exhibition_title} - {artist_name} ({year}) | {site_name}',
+        'artist_description_template' => 'Scopri le opere di {artist_name}, artista contemporaneo. {biography} | {site_name}, Palermo.',
+        'exhibition_description_template' => 'Mostra "{exhibition_title}" di {artist_name} ({year}) presso la {site_name}, Palermo.'
+    );
+
+    $settings = get_option('galleria_seo_settings', array());
+    return wp_parse_args($settings, $defaults);
+}
+
+/**
+ * Handle SEO Settings form submission
+ */
+function galleria_handle_seo_settings() {
+    if (!isset($_POST['galleria_seo_nonce']) || !wp_verify_nonce($_POST['galleria_seo_nonce'], 'galleria_seo_settings')) {
+        return;
+    }
+
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+
+    // Sanitize and save settings
+    $settings = array();
+    $fields = array(
+        'site_name', 'site_tagline', 'meta_author', 'theme_color',
+        'homepage_title', 'homepage_description',
+        'artists_page_title', 'artists_page_description',
+        'exhibitions_page_title', 'exhibitions_page_description',
+        'artist_title_template', 'exhibition_title_template',
+        'artist_description_template', 'exhibition_description_template'
+    );
+
+    foreach ($fields as $field) {
+        if (isset($_POST[$field])) {
+            $value = $_POST[$field];
+            // Special handling for textarea fields
+            if (in_array($field, array('homepage_description', 'artists_page_description', 'exhibitions_page_description', 'artist_description_template', 'exhibition_description_template'))) {
+                $settings[$field] = sanitize_textarea_field($value);
+            } else {
+                $settings[$field] = sanitize_text_field($value);
+            }
+            
+            // Validate color field
+            if ($field === 'theme_color' && !preg_match('/^#[a-fA-F0-9]{6}$/', $settings[$field])) {
+                $settings[$field] = '#111827'; // default color
+            }
+            
+            // Ensure templates have required variables
+            if ($field === 'artist_title_template' && strpos($settings[$field], '{artist_name}') === false) {
+                $settings[$field] = '{artist_name} - Artista | {site_name}'; // fallback
+            }
+            if ($field === 'exhibition_title_template' && strpos($settings[$field], '{exhibition_title}') === false) {
+                $settings[$field] = '{exhibition_title} - {artist_name} ({year}) | {site_name}'; // fallback
+            }
+        }
+    }
+
+    update_option('galleria_seo_settings', $settings);
+
+    wp_redirect(add_query_arg('seo_updated', '1', wp_get_referer()));
+    exit;
+}
+add_action('admin_init', 'galleria_handle_seo_settings');
+
+/**
+ * SEO Settings page content
+ */
+function galleria_seo_settings_page() {
+    $settings = galleria_get_seo_settings();
+    
+    ?>
+    <div class="wrap">
+        <h1>Impostazioni SEO Galleria</h1>
+        
+        <?php if (isset($_GET['seo_updated'])) : ?>
+            <div class="notice notice-success is-dismissible">
+                <p><strong>Impostazioni SEO aggiornate con successo!</strong></p>
+            </div>
+        <?php endif; ?>
+        
+        <div class="card" style="max-width: none;">
+            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
+                <input type="hidden" name="action" value="galleria_seo_settings">
+                <?php wp_nonce_field('galleria_seo_settings', 'galleria_seo_nonce'); ?>
+                
+                <table class="form-table" role="presentation">
+                    <tbody>
+                        <tr>
+                            <th colspan="2"><h2>Informazioni Generali</h2></th>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="site_name">Nome Sito</label></th>
+                            <td>
+                                <input name="site_name" type="text" id="site_name" value="<?php echo esc_attr($settings['site_name']); ?>" class="regular-text" />
+                                <p class="description">Nome della galleria utilizzato nei meta tag e titoli</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="site_tagline">Tagline Sito</label></th>
+                            <td>
+                                <input name="site_tagline" type="text" id="site_tagline" value="<?php echo esc_attr($settings['site_tagline']); ?>" class="regular-text" />
+                                <p class="description">Breve descrizione che accompagna il nome</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="meta_author">Autore Meta Tag</label></th>
+                            <td>
+                                <input name="meta_author" type="text" id="meta_author" value="<?php echo esc_attr($settings['meta_author']); ?>" class="regular-text" />
+                                <p class="description">Valore del meta tag author</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="theme_color">Theme Color</label></th>
+                            <td>
+                                <input name="theme_color" type="color" id="theme_color" value="<?php echo esc_attr($settings['theme_color']); ?>" />
+                                <p class="description">Colore del tema per browser mobile</p>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th colspan="2"><h2>Homepage</h2></th>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="homepage_title">Titolo Homepage</label></th>
+                            <td>
+                                <input name="homepage_title" type="text" id="homepage_title" value="<?php echo esc_attr($settings['homepage_title']); ?>" class="large-text" />
+                                <p class="description">Titolo principale della homepage</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="homepage_description">Descrizione Homepage</label></th>
+                            <td>
+                                <textarea name="homepage_description" id="homepage_description" rows="3" class="large-text"><?php echo esc_textarea($settings['homepage_description']); ?></textarea>
+                                <p class="description">Meta description per la homepage</p>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th colspan="2"><h2>Pagina Artisti</h2></th>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="artists_page_title">Titolo Pagina Artisti</label></th>
+                            <td>
+                                <input name="artists_page_title" type="text" id="artists_page_title" value="<?php echo esc_attr($settings['artists_page_title']); ?>" class="large-text" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="artists_page_description">Descrizione Pagina Artisti</label></th>
+                            <td>
+                                <textarea name="artists_page_description" id="artists_page_description" rows="3" class="large-text"><?php echo esc_textarea($settings['artists_page_description']); ?></textarea>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th colspan="2"><h2>Pagina Mostre</h2></th>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="exhibitions_page_title">Titolo Pagina Mostre</label></th>
+                            <td>
+                                <input name="exhibitions_page_title" type="text" id="exhibitions_page_title" value="<?php echo esc_attr($settings['exhibitions_page_title']); ?>" class="large-text" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="exhibitions_page_description">Descrizione Pagina Mostre</label></th>
+                            <td>
+                                <textarea name="exhibitions_page_description" id="exhibitions_page_description" rows="3" class="large-text"><?php echo esc_textarea($settings['exhibitions_page_description']); ?></textarea>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th colspan="2"><h2>Template Singoli Artisti/Mostre</h2></th>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="artist_title_template">Template Titolo Artista</label></th>
+                            <td>
+                                <input name="artist_title_template" type="text" id="artist_title_template" value="<?php echo esc_attr($settings['artist_title_template']); ?>" class="large-text" />
+                                <p class="description">Variabili disponibili: {artist_name}, {site_name}</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="exhibition_title_template">Template Titolo Mostra</label></th>
+                            <td>
+                                <input name="exhibition_title_template" type="text" id="exhibition_title_template" value="<?php echo esc_attr($settings['exhibition_title_template']); ?>" class="large-text" />
+                                <p class="description">Variabili: {exhibition_title}, {artist_name}, {year}, {site_name}</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="artist_description_template">Template Descrizione Artista</label></th>
+                            <td>
+                                <textarea name="artist_description_template" id="artist_description_template" rows="3" class="large-text"><?php echo esc_textarea($settings['artist_description_template']); ?></textarea>
+                                <p class="description">Variabili: {artist_name}, {biography}, {site_name}</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="exhibition_description_template">Template Descrizione Mostra</label></th>
+                            <td>
+                                <textarea name="exhibition_description_template" id="exhibition_description_template" rows="3" class="large-text"><?php echo esc_textarea($settings['exhibition_description_template']); ?></textarea>
+                                <p class="description">Variabili: {exhibition_title}, {artist_name}, {year}, {site_name}</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <?php submit_button('Salva Impostazioni SEO'); ?>
+            </form>
+        </div>
+        
+        <div class="card">
+            <h2>Informazioni</h2>
+            <p><strong>Come utilizzare i template:</strong></p>
+            <ul>
+                <li>I template utilizzano variabili tra parentesi graffe {} che vengono sostituite automaticamente</li>
+                <li>Le impostazioni vengono applicate immediatamente a tutti i contenuti del sito</li>
+                <li>Lasciare vuoto un campo per utilizzare il valore predefinito</li>
+            </ul>
+        </div>
+    </div>
+    <?php
+}
+
+/**
+ * Handle SEO Settings form submission action
+ */
+add_action('admin_post_galleria_seo_settings', 'galleria_handle_seo_settings');
