@@ -5,16 +5,16 @@
 
 get_header(); ?>
 
-<main id="main_content" class="main-content">
+<main id="main_content" class="main-content" role="main" aria-label="<?php _e('About page content', 'galleria'); ?>">
     <?php while (have_posts()) : the_post(); ?>
         <article id="post-<?php the_ID(); ?>" <?php post_class('about-page'); ?>>
             <!-- About Hero Section -->
-            <section class="about-hero py-16">
+            <section class="about-hero" role="banner" aria-labelledby="about-title">
                 <div class="container">
-                    <div class="max-w-4xl mx-auto text-center">
-                        <h1 class="text-4xl font-light mb-6"><?php the_title(); ?></h1>
+                    <div class="hero-container">
+                        <h1 id="about-title"><?php the_title(); ?></h1>
                         <?php if (has_excerpt()) : ?>
-                            <div class="text-xl text-gray-600 font-light">
+                            <div class="hero-subtitle">
                                 <?php the_excerpt(); ?>
                             </div>
                         <?php endif; ?>
@@ -23,22 +23,55 @@ get_header(); ?>
             </section>
 
             <!-- About Content -->
-            <section class="about-content py-16 bg-gray-50">
+            <section class="about-content" role="region" aria-labelledby="about-content-title">
                 <div class="container">
-                    <div class="grid grid-cols-1 gap-12">
-                        <!-- Main Content (multi-column on larger screens) -->
-                        <div>
-                            <div class="prose prose-lg about-columns">
+                    <div class="content-grid">
+                        <div class="main-content">
+                            <div class="prose">
                                 <?php the_content(); ?>
                             </div>
                         </div>
+                        <aside class="sidebar-content" role="complementary">
+                            <!-- Space for additional content like quick facts, contact info, etc. -->
+                            <?php if (function_exists('get_field')) : 
+                                $gallery_founded = get_field('gallery_founded');
+                                $gallery_focus = get_field('gallery_focus');
+                                $gallery_location = get_field('gallery_location');
+                                
+                                if ($gallery_founded || $gallery_focus || $gallery_location) :
+                            ?>
+                                <div class="about-facts">
+                                    <h3><?php _e('In Brief', 'galleria'); ?></h3>
+                                    <?php if ($gallery_founded) : ?>
+                                        <div class="fact-item">
+                                            <strong><?php _e('Founded:', 'galleria'); ?></strong>
+                                            <span><?php echo esc_html($gallery_founded); ?></span>
+                                        </div>
+                                    <?php endif; ?>
+                                    
+                                    <?php if ($gallery_focus) : ?>
+                                        <div class="fact-item">
+                                            <strong><?php _e('Focus:', 'galleria'); ?></strong>
+                                            <span><?php echo esc_html($gallery_focus); ?></span>
+                                        </div>
+                                    <?php endif; ?>
+                                    
+                                    <?php if ($gallery_location) : ?>
+                                        <div class="fact-item">
+                                            <strong><?php _e('Location:', 'galleria'); ?></strong>
+                                            <span><?php echo esc_html($gallery_location); ?></span>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; endif; ?>
+                        </aside>
                     </div>
                 </div>
             </section>
             <!-- Featured Artists/Exhibitions Section -->
-            <section class="about-featured py-16">
+            <section class="about-featured" role="region" aria-labelledby="exhibitions-title">
                 <div class="container">
-                    <h2 class="text-2xl font-light mb-8 text-center"><?php _e('Recent Exhibitions', 'galleria'); ?></h2>
+                    <h2 id="exhibitions-title"><?php _e('Recent Exhibitions', 'galleria'); ?></h2>
                     
                     <?php
                     $recent_exhibitions = new WP_Query(array(
@@ -50,67 +83,70 @@ get_header(); ?>
                     
                     if ($recent_exhibitions->have_posts()) :
                     ?>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div class="exhibitions-grid">
                             <?php while ($recent_exhibitions->have_posts()) : $recent_exhibitions->the_post(); ?>
-                                <div class="exhibition-preview">
+                                <article class="exhibition-preview" role="article" aria-labelledby="exhibition-title-<?php the_ID(); ?>">
                                     <?php if (has_post_thumbnail()) : ?>
-                                        <div class="preview-image mb-4">
-                                            <a href="<?php the_permalink(); ?>">
-                                                <?php the_post_thumbnail('gallery-card', array('alt' => get_the_title())); ?>
+                                        <div class="preview-image">
+                                            <a href="<?php the_permalink(); ?>" aria-label="<?php printf(__('View exhibition: %s', 'galleria'), get_the_title()); ?>">
+                                                <?php the_post_thumbnail('gallery-card', array(
+                                                    'alt' => get_the_title(),
+                                                    'loading' => 'lazy'
+                                                )); ?>
                                             </a>
                                         </div>
                                     <?php endif; ?>
                                     
-                                    <h3 class="font-medium mb-2">
-                                        <a href="<?php the_permalink(); ?>" class="hover:underline">
-                                            <?php the_title(); ?>
-                                        </a>
-                                    </h3>
-                                    
-                                    <?php 
-                                    $artist = get_field('artist');
-                                    if ($artist) :
-                                    ?>
-                                        <p class="text-gray-600 text-sm"><?php echo esc_html($artist); ?></p>
-                                    <?php endif; ?>
-                                </div>
+                                    <div class="preview-content">
+                                        <h3 id="exhibition-title-<?php the_ID(); ?>">
+                                            <a href="<?php the_permalink(); ?>">
+                                                <?php the_title(); ?>
+                                            </a>
+                                        </h3>
+                                        
+                                        <?php 
+                                        $artist = get_field('artist');
+                                        $exhibition_start = get_field('exhibition_start_date');
+                                        $exhibition_end = get_field('exhibition_end_date');
+                                        
+                                        if ($artist) :
+                                        ?>
+                                            <div class="exhibition-artist"><?php echo esc_html($artist); ?></div>
+                                        <?php endif; ?>
+                                        
+                                        <?php if ($exhibition_start || $exhibition_end) : ?>
+                                            <div class="exhibition-meta">
+                                                <?php 
+                                                if ($exhibition_start && $exhibition_end) {
+                                                    echo date('d M', strtotime($exhibition_start)) . ' - ' . date('d M Y', strtotime($exhibition_end));
+                                                } elseif ($exhibition_start) {
+                                                    echo __('From ', 'galleria') . date('d M Y', strtotime($exhibition_start));
+                                                }
+                                                ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                </article>
                             <?php endwhile; wp_reset_postdata(); ?>
                         </div>
+                        
+                        <div class="exhibitions-cta">
+                            <a href="<?php echo get_post_type_archive_link('exhibition'); ?>" class="btn btn-secondary">
+                                <?php _e('View All Exhibitions', 'galleria'); ?>
+                            </a>
+                        </div>
+                    <?php else : ?>
+                        <p class="no-exhibitions-message">
+                            <?php _e('No recent exhibitions to display.', 'galleria'); ?>
+                        </p>
                     <?php endif; ?>
                 </div>
             </section>
+            
+
         </article>
     <?php endwhile; ?>
 </main>
 
-<style>
-/* About page - multi-column content without sidebar */
-.about-page { color: #0f1724; }
-.about-hero .max-w-4xl { padding: 0 1rem; }
-.about-hero h1, .about-hero .text-4xl { font-size: clamp(2rem, 4.5vw, 3.25rem); line-height: 1.05; font-weight: 300; margin-bottom: 0.5rem; }
-.about-hero .text-xl { font-size: 1.125rem; color: #56606b; max-width: 54ch; margin: 0 auto; }
-
-/* Columnized main content: responsive columns */
-.about-page .prose { max-width: none; }
-.about-columns { column-gap: 2rem; column-fill: auto; }
-@media (min-width: 768px) {
-    .about-columns { -webkit-column-count: 2; column-count: 2; -webkit-column-width: 28rem; column-width: 28rem; }
-}
-@media (min-width: 1200px) {
-    .about-columns { -webkit-column-count: 3; column-count: 3; -webkit-column-width: 24rem; column-width: 24rem; }
-}
-.about-columns p, .about-columns ul, .about-columns ol { break-inside: avoid-column; -webkit-column-break-inside: avoid; margin-bottom: 1.25rem; line-height: 1.75; color: #24303a; font-size: 1.02rem; }
-.about-columns h2, .about-columns h3 { break-inside: avoid-column; }
-.about-columns img, .about-columns figure { break-inside: avoid-column; width: 100%; height: auto; display: block; margin: 0 0 1rem; }
-
-/* Preview grid */
-.exhibition-preview { transition: transform .25s ease, box-shadow .25s ease; }
-.exhibition-preview:hover { transform: translateY(-6px); }
-.preview-image img { width: 100%; height: 220px; object-fit: cover; border-radius: 0.5rem; display: block; }
-
-@media (max-width: 767px) {
-    .about-columns { -webkit-column-count: 1; column-count: 1; }
-}
-</style>
 
 <?php get_footer(); ?>

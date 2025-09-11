@@ -19,16 +19,17 @@
     <div class="container">
         <!-- Logo -->
         <div class="site-logo">
-            <a href="<?php echo esc_url(home_url('/')); ?>" rel="home">
+            <a href="<?php echo esc_url(home_url('/')); ?>" rel="home" aria-label="<?php _e('Torna alla homepage', 'galleria'); ?>">
                 <?php
                 $custom_logo_id = get_theme_mod('custom_logo');
                 if ($custom_logo_id) :
                     $logo = wp_get_attachment_image_src($custom_logo_id, 'full');
-                    echo '<img src="' . esc_url($logo[0]) . '" alt="' . get_bloginfo('name') . '">';
+                    echo '<img src="' . esc_url($logo[0]) . '" alt="' . get_bloginfo('name') . '" class="logo-image">';
                 else :
-                    echo '<img src="' . get_template_directory_uri() . '/assets/images/logo.png" alt="' . get_bloginfo('name') . '">';
+                    echo '<img src="' . get_template_directory_uri() . '/assets/images/logo.png" alt="' . get_bloginfo('name') . '" class="logo-image">';
                 endif;
                 ?>
+
             </a>
         </div>
 
@@ -67,8 +68,10 @@
         <div class="header-actions">
             <?php if (class_exists('WooCommerce')) : ?>
                 <!-- Wishlist Button -->
-                <button class="btn btn-icon wishlist-toggle" title="<?php _e('Lista dei desideri', 'galleria'); ?>">
-                    <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <button class="btn btn-icon wishlist-toggle" 
+                        title="<?php _e('Lista dei desideri', 'galleria'); ?>"
+                        aria-label="<?php _e('Visualizza lista dei desideri', 'galleria'); ?>">
+                    <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                     </svg>
                     <?php
@@ -80,8 +83,11 @@
                 </button>
 
                 <!-- Cart Button -->
-                <a href="<?php echo esc_url(wc_get_cart_url()); ?>" class="btn btn-icon cart-toggle" title="<?php _e('Carrello', 'galleria'); ?>">
-                    <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <a href="<?php echo esc_url(wc_get_cart_url()); ?>" 
+                   class="btn btn-icon cart-toggle" 
+                   title="<?php _e('Carrello', 'galleria'); ?>"
+                   aria-label="<?php _e('Visualizza carrello della spesa', 'galleria'); ?>">
+                    <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
                         <line x1="3" y1="6" x2="21" y2="6"></line>
                         <path d="M16 10a4 4 0 0 1-8 0"></path>
@@ -96,22 +102,32 @@
             <?php endif; ?>
 
             <!-- Mobile Menu Toggle -->
-            <button class="mobile-menu-toggle" aria-label="<?php _e('Toggle Menu', 'galleria'); ?>" aria-expanded="false">
-                <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <button class="mobile-menu-toggle" 
+                    aria-label="<?php _e('Apri menu di navigazione', 'galleria'); ?>" 
+                    aria-expanded="false"
+                    aria-controls="mobile-nav">
+                <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <line x1="3" y1="6" x2="21" y2="6"></line>
                     <line x1="3" y1="12" x2="21" y2="12"></line>
                     <line x1="3" y1="18" x2="21" y2="18"></line>
                 </svg>
+
             </button>
         </div>
     </div>
 
     <!-- Mobile Navigation -->
-    <div class="mobile-nav" id="mobile-nav">
+    <div class="mobile-nav" id="mobile-nav" role="dialog" aria-modal="true" aria-labelledby="mobile-nav-title">
         <div class="mobile-nav-content">
             <div class="mobile-nav-header">
-                <h2 class="mobile-nav-title"><?php _e('Menu', 'galleria'); ?></h2>
+                <h2 class="mobile-nav-title" id="mobile-nav-title"><?php _e('Menu', 'galleria'); ?></h2>
                 <p class="mobile-nav-description"><?php _e('Navigate through our gallery sections', 'galleria'); ?></p>
+                <button class="mobile-nav-close" aria-label="<?php _e('Chiudi menu', 'galleria'); ?>">
+                    <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
             </div>
             
             <nav class="mobile-nav-menu" role="navigation" aria-label="<?php _e('Mobile Menu', 'galleria'); ?>">

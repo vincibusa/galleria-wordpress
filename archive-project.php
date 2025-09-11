@@ -7,10 +7,9 @@ get_header(); ?>
 
 <main id="main_content" class="main-content">
     <div class="container py-16">
-        <header class="archive-header mb-8">
-            <h1 class="text-2xl font-light"><?php _e('Projects', 'galleria'); ?></h1>
-            
-            <!-- filters removed -->
+        <header class="archive-header">
+            <h1><?php _e('Projects', 'galleria'); ?></h1>
+            <p class="archive-description"><?php _e('Discover our artistic projects and cultural initiatives', 'galleria'); ?></p>
         </header>
 
         <?php
@@ -74,20 +73,16 @@ get_header(); ?>
                                 </p>
                             <?php endif; ?>
                             
-                            <?php if ($artist) : ?>
-                                <h2 class="text-2xl font-light text-gray-900 uppercase tracking-wide">
-                                    <a href="<?php the_permalink(); ?>">
-                                        <?php echo esc_html($artist); ?>
-                                    </a>
-                                </h2>
-                            <?php endif; ?>
+                            <h2 class="text-xl font-medium text-gray-900">
+                                <a href="<?php the_permalink(); ?>">
+                                    <?php the_title(); ?>
+                                </a>
+                            </h2>
                             
-                            <?php if (get_the_title()) : ?>
-                                <h3 class="text-xl font-light italic text-gray-800">
-                                    <a href="<?php the_permalink(); ?>">
-                                        &ldquo;<?php the_title(); ?>&rdquo;
-                                    </a>
-                                </h3>
+                            <?php if ($artist) : ?>
+                                <p class="text-lg font-light text-gray-700 uppercase tracking-wide">
+                                    <a href="<?php the_permalink(); ?>"><?php echo esc_html($artist); ?></a>
+                                </p>
                             <?php endif; ?>
                             
                             <?php if ($curator) : ?>
@@ -126,137 +121,5 @@ get_header(); ?>
     </div>
 </main>
 
-<style>
-/* Tailwind-like utilities for consistent styling */
-.text-gray-600 {
-    color: #4b5563;
-}
-
-.text-gray-700 {
-    color: #374151;
-}
-
-.text-gray-800 {
-    color: #1f2937;
-}
-
-.text-gray-900 {
-    color: #111827;
-}
-
-.bg-gray-100 {
-    background-color: #f3f4f6;
-}
-
-.border-gray-100 {
-    border-color: #f3f4f6;
-}
-
-.border-b {
-    border-bottom-width: 1px;
-}
-
-.pb-8 {
-    padding-bottom: 2rem;
-}
-
-.mt-4 {
-    margin-top: 1rem;
-}
-
-.space-y-2 > * + * {
-    /* tightened to match exhibition spacing */
-    margin-top: 0.125rem;
-}
-
-/* Reset default margins for headings and paragraphs inside the spacing utility */
-.space-y-2 h2,
-.space-y-2 h3,
-.space-y-2 p {
-    margin: 10px;
-}
-
-/* Reduce top margin between thumbnail and text specifically for project cards */
-.project-card .mt-4 {
-    margin-top: 0.5rem;
-}
-
-.text-center {
-    text-align: center;
-}
-
-.text-sm {
-    font-size: 0.875rem;
-}
-
-.text-xl {
-    font-size: 1.25rem;
-}
-
-.text-2xl {
-    font-size: 1.5rem;
-}
-
-.font-light {
-    font-weight: 300;
-}
-
-.font-medium {
-    font-weight: 500;
-}
-
-.uppercase {
-    text-transform: uppercase;
-}
-
-.italic {
-    font-style: italic;
-}
-
-.tracking-wide {
-    letter-spacing: 0.025em;
-}
-
-.aspect-video {
-    aspect-ratio: 16 / 9;
-}
-
-.relative {
-    position: relative;
-}
-
-.overflow-hidden {
-    overflow: hidden;
-}
-
-.object-cover {
-    object-fit: cover;
-}
-
-.w-full {
-    width: 100%;
-}
-
-.h-full {
-    height: 100%;
-}
-
-/* Remove last border */
-.project-card:last-child {
-    border-bottom: none;
-}
-
-.project-card h2 a,
-.project-card h3 a {
-    font-style: normal;
-}
-
-/* Responsive text alignment */
-@media (min-width: 768px) {
-    .md\:text-left {
-        text-align: left;
-    }
-}
-</style>
 
 <?php get_footer(); ?>

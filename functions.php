@@ -162,9 +162,52 @@ function galleria_scripts() {
     // Enqueue styles
     wp_enqueue_style('google-fonts', 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap', array(), null);
     wp_enqueue_style('galleria-style', get_stylesheet_uri(), array(), wp_get_theme()->get('Version'));
+    wp_enqueue_style('galleria-header-footer', get_template_directory_uri() . '/assets/css/header-footer.css', array('galleria-style'), wp_get_theme()->get('Version'));
+    wp_enqueue_style('galleria-components', get_template_directory_uri() . '/assets/css/components.css', array('galleria-style'), wp_get_theme()->get('Version'));
+    
+    // Homepage specific styles
+    if (is_front_page()) {
+        wp_enqueue_style('galleria-homepage', get_template_directory_uri() . '/assets/css/homepage.css', array('galleria-style'), wp_get_theme()->get('Version'));
+    }
+    
+    // Archive/Index specific styles
+    if (is_home() || is_archive() || is_search()) {
+        wp_enqueue_style('galleria-archive', get_template_directory_uri() . '/assets/css/archive.css', array('galleria-style'), wp_get_theme()->get('Version'));
+        
+        // Exhibition archive specific CSS
+        if (is_post_type_archive('exhibition')) {
+            wp_enqueue_style('galleria-exhibition-archive', get_template_directory_uri() . '/assets/css/exhibition-archive.css', array('galleria-style'), wp_get_theme()->get('Version'));
+        }
+        
+        // Project archive specific CSS
+        if (is_post_type_archive('project')) {
+            wp_enqueue_style('galleria-project-archive', get_template_directory_uri() . '/assets/css/project-archive.css', array('galleria-style'), wp_get_theme()->get('Version'));
+        }
+    }
+    
+    // Exhibition single page CSS
+    if (is_singular('exhibition')) {
+        wp_enqueue_style('galleria-exhibition-single', get_template_directory_uri() . '/assets/css/exhibition-single.css', array('galleria-style'), wp_get_theme()->get('Version'));
+    }
+    
+    // Project single page CSS
+    if (is_singular('project')) {
+        wp_enqueue_style('galleria-project-single', get_template_directory_uri() . '/assets/css/project-single.css', array('galleria-style'), wp_get_theme()->get('Version'));
+    }
+    
+    // About page specific styles
+    if (is_page_template('page-about.php') || is_page('about') || is_page('chi-siamo')) {
+        wp_enqueue_style('galleria-about', get_template_directory_uri() . '/assets/css/about.css', array('galleria-style'), wp_get_theme()->get('Version'));
+    }
+    
+    // News archive specific styles
+    if (get_query_var('is_news_archive') == '1') {
+        wp_enqueue_style('galleria-news', get_template_directory_uri() . '/assets/css/news.css', array('galleria-style'), wp_get_theme()->get('Version'));
+    }
 
     // Enqueue scripts
     wp_enqueue_script('galleria-main', get_template_directory_uri() . '/assets/js/main.js', array('jquery'), wp_get_theme()->get('Version'), true);
+    wp_enqueue_script('galleria-mobile-nav', get_template_directory_uri() . '/assets/js/mobile-nav.js', array(), wp_get_theme()->get('Version'), true);
     
     // Localize script for AJAX
     wp_localize_script('galleria-main', 'galleria_ajax', array(
@@ -173,6 +216,43 @@ function galleria_scripts() {
     ));
 }
 add_action('wp_enqueue_scripts', 'galleria_scripts');
+
+
+/**
+ * Enhanced SEO Meta Tags
+ */
+function galleria_custom_meta_tags() {
+    echo '<meta name="theme-color" content="#ffffff">';
+    echo '<meta name="msapplication-TileColor" content="#ffffff">';
+    
+    if (is_front_page()) {
+        echo '<meta property="og:type" content="website">';
+        echo '<meta property="og:title" content="' . esc_attr(get_bloginfo('name') . ' - ' . get_bloginfo('description')) . '">';
+        echo '<meta name="description" content="' . esc_attr(__('Galleria d\'arte contemporanea a Palermo. Scopri mostre, artisti e opere d\'arte moderna nel cuore della Sicilia.', 'galleria')) . '">';
+    } elseif (is_singular('artist')) {
+        echo '<meta property="og:type" content="profile">';
+        echo '<meta property="og:title" content="' . esc_attr(get_the_title() . ' - Artista') . '">';
+        $artist_bio = get_field('artist_bio');
+        if ($artist_bio) {
+            echo '<meta name="description" content="' . esc_attr(wp_trim_words($artist_bio, 30)) . '">';
+        }
+    } elseif (is_singular('exhibition')) {
+        echo '<meta property="og:type" content="article">';
+        echo '<meta property="og:title" content="' . esc_attr(get_the_title() . ' - Mostra') . '">';
+        if (get_the_excerpt()) {
+            echo '<meta name="description" content="' . esc_attr(wp_trim_words(get_the_excerpt(), 30)) . '">';
+        }
+    }
+    
+    // Featured image for social sharing
+    if (has_post_thumbnail()) {
+        $image_url = get_the_post_thumbnail_url(get_the_ID(), 'large');
+        echo '<meta property="og:image" content="' . esc_url($image_url) . '">';
+        echo '<meta name="twitter:card" content="summary_large_image">';
+        echo '<meta name="twitter:image" content="' . esc_url($image_url) . '">';
+    }
+}
+add_action('wp_head', 'galleria_custom_meta_tags');
 
 /**
  * Register Custom Post Types
@@ -515,10 +595,106 @@ add_action('wp_head', 'galleria_add_structured_data');
  * Add custom rewrite rule for /news/
  */
 function galleria_add_news_rewrite_rule() {
-    add_rewrite_rule('^news/?$', 'index.php?post_type=post', 'top');
-    add_rewrite_rule('^news/page/([0-9]+)/?$', 'index.php?post_type=post&paged=$matches[1]', 'top');
+    add_rewrite_rule('^news/?$', 'index.php?post_type=post&is_news_archive=1', 'top');
+    add_rewrite_rule('^news/page/([0-9]+)/?$', 'index.php?post_type=post&is_news_archive=1&paged=$matches[1]', 'top');
+    add_rewrite_rule('^news/category/([^/]+)/?$', 'index.php?post_type=post&is_news_archive=1&category_name=$matches[1]', 'top');
+    add_rewrite_rule('^news/category/([^/]+)/page/([0-9]+)/?$', 'index.php?post_type=post&is_news_archive=1&category_name=$matches[1]&paged=$matches[2]', 'top');
 }
 add_action('init', 'galleria_add_news_rewrite_rule');
+
+/**
+ * Add custom query vars for news archive
+ */
+function galleria_add_query_vars($vars) {
+    $vars[] = 'is_news_archive';
+    return $vars;
+}
+add_filter('query_vars', 'galleria_add_query_vars');
+
+/**
+ * Use news archive template when accessing /news/
+ */
+function galleria_news_template_redirect($template) {
+    if (get_query_var('is_news_archive') == '1') {
+        $news_template = locate_template('archive-news.php');
+        if ($news_template) {
+            return $news_template;
+        }
+    }
+    return $template;
+}
+add_filter('template_include', 'galleria_news_template_redirect');
+
+/**
+ * Add SEO meta tags and structured data for news archive
+ */
+function galleria_news_seo_meta() {
+    if (get_query_var('is_news_archive') == '1') {
+        $current_cat = get_query_var('category_name');
+        $page = max(1, get_query_var('paged'));
+        
+        // Set page title
+        $title = __('News & Events', 'galleria');
+        if ($current_cat) {
+            $cat_obj = get_category_by_slug($current_cat);
+            if ($cat_obj) {
+                $title = sprintf(__('%s - News', 'galleria'), $cat_obj->name);
+            }
+        }
+        if ($page > 1) {
+            $title .= ' - ' . sprintf(__('Page %d', 'galleria'), $page);
+        }
+        $title .= ' | ' . get_bloginfo('name');
+        
+        // Meta description
+        $description = __('Stay updated with the latest exhibitions, events, and gallery news from Galleria Catanzaro.', 'galleria');
+        if ($current_cat && isset($cat_obj)) {
+            $description = sprintf(__('Browse %s from Galleria Catanzaro. Latest updates and events.', 'galleria'), strtolower($cat_obj->name));
+        }
+        
+        echo '<title>' . esc_html($title) . '</title>' . "\n";
+        echo '<meta name="description" content="' . esc_attr($description) . '">' . "\n";
+        echo '<meta property="og:title" content="' . esc_attr($title) . '">' . "\n";
+        echo '<meta property="og:description" content="' . esc_attr($description) . '">' . "\n";
+        echo '<meta property="og:type" content="website">' . "\n";
+        echo '<meta property="og:url" content="' . esc_url(home_url('/news/')) . '">' . "\n";
+        echo '<link rel="canonical" href="' . esc_url(home_url('/news/')) . '">' . "\n";
+        
+        // Structured data for news archive
+        $schema = array(
+            '@context' => 'https://schema.org',
+            '@type' => 'CollectionPage',
+            'name' => $title,
+            'description' => $description,
+            'url' => home_url('/news/'),
+            'mainEntity' => array(
+                '@type' => 'ItemList',
+                'name' => __('Gallery News & Events', 'galleria'),
+                'description' => $description
+            ),
+            'breadcrumb' => array(
+                '@type' => 'BreadcrumbList',
+                'itemListElement' => array(
+                    array(
+                        '@type' => 'ListItem',
+                        'position' => 1,
+                        'name' => __('Home', 'galleria'),
+                        'item' => home_url()
+                    ),
+                    array(
+                        '@type' => 'ListItem',
+                        'position' => 2,
+                        'name' => __('News', 'galleria'),
+                        'item' => home_url('/news/')
+                    )
+                )
+            )
+        );
+        
+        echo '<script type="application/ld+json">' . json_encode($schema) . '</script>' . "\n";
+    }
+}
+add_action('wp_head', 'galleria_news_seo_meta');
 
 /**
  * Flush rewrite rules on theme activation
@@ -528,6 +704,24 @@ function galleria_flush_rewrite_rules() {
     flush_rewrite_rules();
 }
 add_action('after_switch_theme', 'galleria_flush_rewrite_rules');
+
+/**
+ * Add News link to navigation menu programmatically
+ */
+function galleria_add_news_to_nav($items, $args) {
+    // Only add to primary menu
+    if ($args->theme_location == 'primary') {
+        $news_link = '<li class="menu-item menu-item-type-custom">
+            <a href="' . home_url('/news/') . '">' . __('News', 'galleria') . '</a>
+        </li>';
+        
+        // Insert before the last item (usually Contact)
+        $items = preg_replace('/(<li[^>]*class="[^"]*menu-item[^"]*"[^>]*>.*?<\/li>)(?!.*<li)/', $news_link . '$1', $items);
+    }
+    return $items;
+}
+// Uncomment the line below to automatically add News to the menu
+// add_filter('wp_nav_menu_items', 'galleria_add_news_to_nav', 10, 2);
 
 /**
  * SMTP Configuration for Email Delivery

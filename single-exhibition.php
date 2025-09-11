@@ -22,8 +22,8 @@ get_header(); ?>
             <section class="exhibition-hero">
                 <?php if (has_post_thumbnail()) : ?>
                     <div class="hero-image relative">
-                        <?php the_post_thumbnail('gallery-hero', array(
-                            'alt' => get_the_title(),
+                        <?php the_post_thumbnail('full', array(
+                            'alt' => esc_attr(sprintf(__('Exhibition hero image: %s', 'galleria'), get_the_title())),
                             'class' => 'w-full h-full object-cover'
                         )); ?>
                         
@@ -219,7 +219,7 @@ get_header(); ?>
             </section>
 
             <!-- Navigation -->
-            <section class="exhibition-navigation py-8 border-t bg-gray-50">
+            <nav class="exhibition-navigation py-8 border-t bg-gray-50" aria-label="<?php _e('Exhibition Navigation', 'galleria'); ?>">
                 <div class="container">
                     <div class="flex justify-between items-center">
                         <?php
@@ -230,8 +230,9 @@ get_header(); ?>
                         <div class="nav-previous">
                             <?php if ($prev_post) : ?>
                                 <a href="<?php echo get_permalink($prev_post->ID); ?>" 
-                                   class="inline-flex items-center space-x-2 text-sm font-light hover:underline">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                   class="inline-flex items-center space-x-2 text-sm font-light hover:underline"
+                                   aria-label="<?php echo esc_attr(sprintf(__('Previous exhibition: %s', 'galleria'), $prev_post->post_title)); ?>">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                                     </svg>
                                     <span><?php echo esc_html($prev_post->post_title); ?></span>
@@ -241,7 +242,8 @@ get_header(); ?>
                         
                         <div class="nav-back">
                             <a href="<?php echo get_post_type_archive_link('exhibition'); ?>" 
-                               class="text-sm font-light hover:underline">
+                               class="text-sm font-light hover:underline"
+                               aria-label="<?php _e('Return to all exhibitions', 'galleria'); ?>">
                                 <?php _e('All Exhibitions', 'galleria'); ?>
                             </a>
                         </div>
@@ -249,9 +251,10 @@ get_header(); ?>
                         <div class="nav-next">
                             <?php if ($next_post) : ?>
                                 <a href="<?php echo get_permalink($next_post->ID); ?>" 
-                                   class="inline-flex items-center space-x-2 text-sm font-light hover:underline">
+                                   class="inline-flex items-center space-x-2 text-sm font-light hover:underline"
+                                   aria-label="<?php echo esc_attr(sprintf(__('Next exhibition: %s', 'galleria'), $next_post->post_title)); ?>">
                                     <span><?php echo esc_html($next_post->post_title); ?></span>
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                     </svg>
                                 </a>
@@ -259,249 +262,10 @@ get_header(); ?>
                         </div>
                     </div>
                 </div>
-            </section>
+            </nav>
         </article>
     <?php endwhile; ?>
 </main>
 
-<style>
-/* Hero Section */
-.hero-image {
-    /* make hero responsive but with a reasonable maximum height */
-    height: min(70vh, 800px);
-    min-height: 360px;
-    position: relative;
-    overflow: hidden;
-}
-
-.hero-image img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-
-.hero-content {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    /* stronger and smoother gradient for better contrast */
-    background: linear-gradient(transparent, rgba(0,0,0,0.85));
-    color: white;
-    padding: 3.5rem 0;
-}
-
-.hero-meta {
-    display: flex;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
-    font-size: 0.9rem;
-    opacity: 0.95;
-    flex-wrap: wrap;
-    align-items: center;
-}
-
-.hero-title {
-    font-size: clamp(1.75rem, 4vw, 3rem);
-    font-weight: 300;
-    line-height: 1.08;
-    margin-bottom: 0.5rem;
-    letter-spacing: -0.01em;
-    text-shadow: 0 6px 18px rgba(0,0,0,0.6);
-}
-
-.hero-artist {
-    font-size: 1.125rem;
-    font-weight: 300;
-    margin-bottom: 0.4rem;
-    opacity: 0.95;
-}
-
-.hero-curator {
-    font-size: 1rem;
-    opacity: 0.8;
-    font-style: italic;
-}
-
-/* Sidebar */
-.exhibition-sidebar {
-    /* remove boxed/card look so details flow as part of the page */
-    background: transparent;
-    padding: 0;
-    border-radius: 0;
-    height: auto;
-    border: none;
-    box-shadow: none;
-}
-
-.info-title {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #111827;
-    margin-bottom: 0.75rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid #eef2f6;
-}
-
-.info-item {
-    display: block;
-    padding: 0.35rem 0;
-}
-
-.info-item strong {
-    font-size: 0.875rem;
-    color: #6b7280;
-    font-weight: 600;
-    display: block;
-    margin-bottom: 0.25rem;
-}
-
-.info-item span,
-.info-item a {
-    font-size: 0.95rem;
-    color: #111827;
-    display: block;
-}
-
-.info-item a:hover {
-    color: #6b7280;
-}
-
-/* status styles removed */
-
-.contact-info .font-medium {
-    margin-bottom: 0.5rem;
-}
-
-.address {
-    margin-bottom: 1rem;
-    font-size: 0.875rem;
-    color: #6b7280;
-}
-
-.contact-details p {
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
-}
-
-.contact-details strong {
-    color: #6b7280;
-    margin-right: 0.25rem;
-}
-
-.contact-details a {
-    color: #111827;
-    text-decoration: none;
-}
-
-.contact-details a:hover {
-    color: #6b7280;
-}
-
-.prose {
-    max-width: none;
-}
-
-.prose p {
-    margin-bottom: 0.9rem;
-    line-height: 1.85;
-    color: #111827;
-    font-size: 1rem;
-}
-
-/* Ensure sidebar appears left-aligned under the main content */
-.exhibition-sidebar {
-    max-width: 360px;
-    margin-left: 0;
-    margin-top: 1.5rem;
-}
-
-@media (min-width: 1024px) {
-    /* On larger screens, keep details under the content but aligned left with content width */
-    .exhibition-sidebar {
-        margin-left: 0;
-    }
-}
-
-/* Navigation tweaks */
-.exhibition-navigation .flex {
-    align-items: center;
-}
-
-.exhibition-navigation a {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.45rem 0.75rem;
-    border-radius: 6px;
-    border: 1px solid transparent;
-    color: #111827;
-    text-decoration: none;
-}
-
-.exhibition-navigation a:hover {
-    background: rgba(17,24,39,0.04);
-}
-
-.nav-previous a, .nav-next a {
-    border: 1px solid #e6e7eb;
-}
-
-/* Responsive */
-@media (max-width: 1024px) {
-    .exhibition-sidebar {
-        margin-top: 2rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .hero-image {
-        height: 50vh;
-        min-height: 300px;
-    }
-    
-    .hero-content {
-        padding: 2rem 0;
-    }
-    
-    .hero-title {
-        font-size: 1.875rem;
-    }
-    
-    .hero-artist {
-        font-size: 1.125rem;
-    }
-    
-    .status-badge {
-        top: 1rem;
-        right: 1rem;
-        font-size: 0.75rem;
-        padding: 0.375rem 0.75rem;
-    }
-    
-    .exhibition-sidebar {
-        padding: 1.5rem;
-    }
-    
-    .exhibition-navigation .flex {
-        flex-direction: column;
-        gap: 1rem;
-        text-align: center;
-    }
-    
-    .nav-previous,
-    .nav-next {
-        order: 2;
-    }
-    
-    .nav-back {
-        order: 1;
-    }
-}
-</style>
 
 <?php get_footer(); ?>

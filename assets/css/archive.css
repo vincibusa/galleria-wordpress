@@ -1,0 +1,163 @@
+/* ====================================
+   ARCHIVE/INDEX STYLES - GALLERIA CATANZARO
+   ==================================== */
+
+/* Container and Layout */
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 4rem 1rem;
+}
+
+/* Posts Grid */
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 2rem;
+}
+
+/* Card Components */
+.card {
+    border: 0;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-content {
+    padding: 0;
+}
+
+.card-image img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+/* Card Content Spacing */
+.space-y-2 > * + * {
+    margin-top: 0.25rem;
+}
+
+.card-title {
+    font-size: 1.125rem;
+    font-weight: 300;
+    line-height: 1.4;
+    margin-bottom: 0;
+}
+
+.card-title strong {
+    font-weight: 500;
+}
+
+.card-title a {
+    color: #111827;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.card-title a:hover {
+    color: #6b7280;
+}
+
+.card-meta {
+    font-size: 0.75rem;
+    color: #4b5563;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    background-color: #e5e7eb;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    display: inline-block;
+}
+
+.card-description {
+    font-size: 0.875rem;
+    color: #4b5563;
+    line-height: 1.5;
+}
+
+/* No Posts State */
+.no-posts {
+    text-align: center;
+    padding: 4rem 1rem;
+}
+
+.no-posts h1 {
+    font-size: 2rem;
+    font-weight: 300;
+    margin-bottom: 1rem;
+    color: #111827;
+}
+
+.no-posts p {
+    color: #6b7280;
+    margin-bottom: 2rem;
+}
+
+/* Screen reader text */
+.screen-reader-text {
+    clip: rect(1px, 1px, 1px, 1px);
+    position: absolute !important;
+    height: 1px;
+    width: 1px;
+    overflow: hidden;
+    word-wrap: normal !important;
+}
+
+/* Pagination */
+.navigation.pagination {
+    margin-top: 3rem;
+    text-align: center;
+}
+
+.page-numbers {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    margin: 0 0.25rem;
+    color: #6b7280;
+    text-decoration: none;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.page-numbers:hover,
+.page-numbers.current {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+    color: #111827;
+}
+
+.page-numbers.current {
+    background-color: #111827;
+    color: white;
+    border-color: #111827;
+}
+
+/* Responsive Design - Tablet */
+@media (min-width: 768px) {
+    .posts-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    
+    .container {
+        padding: 4rem 1.5rem;
+    }
+}
+
+/* Responsive Design - Desktop */
+@media (min-width: 1024px) {
+    .posts-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    
+    .container {
+        padding: 4rem 2rem;
+    }
+}
