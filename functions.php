@@ -8,39 +8,6 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Include migration script only when needed (commented out for now)
-// require_once get_template_directory() . '/migration-script.php';
-
-// Add admin menu for migration
-add_action('admin_menu', 'galleria_add_migration_menu');
-
-function galleria_add_migration_menu() {
-    add_management_page(
-        'Galleria Migration',
-        'Galleria Migration', 
-        'manage_options',
-        'galleria-migration',
-        'galleria_migration_page'
-    );
-}
-
-function galleria_migration_page() {
-    if (isset($_POST['run_migration'])) {
-        run_migration();
-        return;
-    }
-    ?>
-    <div class="wrap">
-        <h1>Galleria Migration Script</h1>
-        <p>This will migrate artists, exhibitions, and news from your Next.js data to WordPress.</p>
-        
-        <form method="post" style="margin-top: 20px;">
-            <?php wp_nonce_field('galleria_migration', 'migration_nonce'); ?>
-            <input type="submit" name="run_migration" class="button button-primary" value="Run Migration" onclick="return confirm('Are you sure you want to run the migration? This will create new posts in your database.');" />
-        </form>
-    </div>
-    <?php
-}
 
 /**
  * Theme Customizer
@@ -293,11 +260,19 @@ function galleria_register_post_types() {
         ),
         'public' => true,
         'has_archive' => true,
-        'rewrite' => array('slug' => 'projects'),
+        'rewrite' => array('slug' => 'projects', 'with_front' => false),
         'supports' => array('title', 'editor', 'thumbnail', 'excerpt'),
         'menu_icon' => 'dashicons-portfolio',
         'show_in_rest' => true,
+        'publicly_queryable' => true,
+        'query_var' => true,
     ));
+    
+    // Force flush rewrite rules on theme activation
+    if (get_option('galleria_flush_rewrite_rules') !== 'done') {
+        flush_rewrite_rules();
+        update_option('galleria_flush_rewrite_rules', 'done');
+    }
 }
 add_action('init', 'galleria_register_post_types');
 
@@ -1167,6 +1142,10 @@ function galleria_smtp_settings_page() {
  */
 require_once get_template_directory() . '/inc/acf-fields.php';
 require_once get_template_directory() . '/inc/seo-optimization.php';
+require_once get_template_directory() . '/inc/seo-analytics.php';
+require_once get_template_directory() . '/inc/local-seo.php';
+require_once get_template_directory() . '/inc/seo-dashboard.php';
+require_once get_template_directory() . '/inc/local-business-manager.php';
 
 /**
  * AJAX handlers for theme functionality
@@ -1345,6 +1324,58 @@ function galleria_seo_admin_menu() {
     );
 }
 add_action('admin_menu', 'galleria_seo_admin_menu');
+
+/**
+ * Add Migration Tools to admin menu
+ */
+function galleria_migration_admin_menu() {
+    add_menu_page(
+        'Migration Tools',
+        'Migration Tools',
+        'manage_options',
+        'galleria-migration',
+        'galleria_migration_tools_page',
+        'dashicons-database-import',
+        30
+    );
+    
+    add_submenu_page(
+        'galleria-migration',
+        'Run Migration',
+        'Run Migration',
+        'manage_options',
+        'galleria-migration-run',
+        'galleria_run_migration_page'
+    );
+    
+    add_submenu_page(
+        'galleria-migration',
+        'Test Migration',
+        'Test Migration',
+        'manage_options',
+        'galleria-migration-test',
+        'galleria_test_migration_page'
+    );
+    
+    add_submenu_page(
+        'galleria-migration',
+        'Performance Diagnostic',
+        'Performance Check',
+        'manage_options',
+        'galleria-performance',
+        'galleria_performance_diagnostic_page'
+    );
+    
+    add_submenu_page(
+        'galleria-migration',
+        'WWW Domain Fix',
+        'Domain Fix',
+        'manage_options',
+        'galleria-domain-fix',
+        'galleria_domain_fix_page'
+    );
+}
+add_action('admin_menu', 'galleria_migration_admin_menu');
 
 /**
  * Get SEO settings with defaults
@@ -1586,3 +1617,460 @@ function galleria_seo_settings_page() {
  * Handle SEO Settings form submission action
  */
 add_action('admin_post_galleria_seo_settings', 'galleria_handle_seo_settings');
+
+/**
+ * Migration Tools main page
+ */
+function galleria_migration_tools_page() {
+    ?>
+    <div class="wrap">
+        <h1>🔧 Migration Tools - Galleria Catanzaro</h1>
+        
+        <div class="notice notice-info">
+            <p><strong>ℹ️ Benvenuto negli strumenti di migrazione!</strong> Utilizza queste funzioni per gestire la migrazione dei contenuti e diagnosticare problemi di performance.</p>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 30px;">
+            
+            <div class="card" style="padding: 20px; background: #fff; border: 1px solid #ccd0d4; border-radius: 4px;">
+                <h2 style="margin-top: 0;">🚀 Run Migration</h2>
+                <p>Esegui la migrazione completa dei contenuti da Next.js a WordPress. Include artisti, mostre, progetti e news.</p>
+                <a href="<?php echo admin_url('admin.php?page=galleria-migration-run'); ?>" class="button button-primary">
+                    Avvia Migrazione
+                </a>
+            </div>
+            
+            <div class="card" style="padding: 20px; background: #fff; border: 1px solid #ccd0d4; border-radius: 4px;">
+                <h2 style="margin-top: 0;">🧪 Test Migration</h2>
+                <p>Testa il sistema di migrazione e verifica che tutto sia configurato correttamente prima dell'esecuzione.</p>
+                <a href="<?php echo admin_url('admin.php?page=galleria-migration-test'); ?>" class="button button-secondary">
+                    Test Sistema
+                </a>
+            </div>
+            
+            <div class="card" style="padding: 20px; background: #fff; border: 1px solid #ccd0d4; border-radius: 4px;">
+                <h2 style="margin-top: 0;">📊 Performance Check</h2>
+                <p>Analizza le performance del sito e confronta i risultati tra ambiente locale e SiteGround.</p>
+                <a href="<?php echo admin_url('admin.php?page=galleria-performance'); ?>" class="button button-secondary">
+                    Diagnosi Performance
+                </a>
+            </div>
+            
+            <div class="card" style="padding: 20px; background: #fff; border: 1px solid #ccd0d4; border-radius: 4px;">
+                <h2 style="margin-top: 0;">🔗 Domain Fix</h2>
+                <p>Risolvi problemi di redirect tra versioni www e non-www del dominio. Include configurazione DNS.</p>
+                <a href="<?php echo admin_url('admin.php?page=galleria-domain-fix'); ?>" class="button button-secondary">
+                    Fix Dominio
+                </a>
+            </div>
+            
+        </div>
+        
+        <div style="margin-top: 40px; padding: 20px; background: #f9f9f9; border-radius: 4px;">
+            <h3>📋 Status Attuale</h3>
+            <?php
+            // Quick status check
+            $post_counts = array();
+            $post_types = array('artist', 'exhibition', 'project', 'post');
+            
+            echo '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 15px;">';
+            foreach ($post_types as $type) {
+                $count = wp_count_posts($type);
+                $published = $count->publish ?? 0;
+                $type_label = $type === 'post' ? 'News' : ucfirst($type) . 's';
+                
+                echo '<div style="text-align: center; padding: 15px; background: white; border-radius: 4px;">';
+                echo '<div style="font-size: 24px; font-weight: bold; color: #0073aa;">' . $published . '</div>';
+                echo '<div style="font-size: 12px; color: #666;">' . $type_label . '</div>';
+                echo '</div>';
+            }
+            echo '</div>';
+            ?>
+        </div>
+    </div>
+    <?php
+}
+
+/**
+ * Run Migration page
+ */
+function galleria_run_migration_page() {
+    // Include migration script and run it
+    require_once(get_template_directory() . '/migration-script.php');
+    
+    if (isset($_GET['execute']) && $_GET['execute'] === 'true') {
+        run_migration();
+    } else {
+        ?>
+        <div class="wrap">
+            <h1>🚀 Run Migration</h1>
+            
+            <div class="notice notice-warning">
+                <p><strong>⚠️ Attenzione!</strong> La migrazione creerà nuovi contenuti nel database. Assicurati di aver fatto un backup prima di procedere.</p>
+            </div>
+            
+            <div style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px; margin: 20px 0;">
+                <h2>Cosa include questa migrazione:</h2>
+                <ul>
+                    <li>✅ <strong>Artisti:</strong> Importazione di tutti gli artisti con biografie</li>
+                    <li>✅ <strong>Mostre:</strong> Migrazione delle exhibitions (escluso OSSI)</li>
+                    <li>✅ <strong>Progetti:</strong> Creazione di OSSI come project</li>
+                    <li>✅ <strong>News:</strong> Importazione delle news recenti</li>
+                    <li>✅ <strong>Immagini:</strong> Upload automatico nella Media Library</li>
+                    <li>✅ <strong>Tassonomie:</strong> Creazione di location e status</li>
+                </ul>
+            </div>
+            
+            <p>
+                <a href="<?php echo admin_url('admin.php?page=galleria-migration-run&execute=true'); ?>" class="button button-primary button-hero" onclick="return confirm('Sei sicuro di voler avviare la migrazione? Assicurati di aver fatto un backup del database.');">
+                    🚀 Avvia Migrazione Completa
+                </a>
+                
+                <a href="<?php echo admin_url('admin.php?page=galleria-migration-test'); ?>" class="button button-secondary">
+                    🧪 Esegui Prima i Test
+                </a>
+            </p>
+        </div>
+        <?php
+    }
+}
+
+/**
+ * Test Migration page
+ */
+function galleria_test_migration_page() {
+    // Include and display test results
+    $test_file = get_template_directory() . '/test-migration.php';
+    
+    if (file_exists($test_file)) {
+        // Capture the output of test-migration.php
+        ob_start();
+        include $test_file;
+        $content = ob_get_clean();
+        
+        // Extract just the body content
+        preg_match('/<body[^>]*>(.*?)<\/body>/s', $content, $matches);
+        if (isset($matches[1])) {
+            echo '<div class="wrap">';
+            echo $matches[1];
+            echo '</div>';
+        } else {
+            echo $content;
+        }
+    } else {
+        ?>
+        <div class="wrap">
+            <h1>🧪 Test Migration</h1>
+            <div class="notice notice-error">
+                <p><strong>❌ Errore:</strong> File di test non trovato. Assicurati che test-migration.php sia presente nella cartella del tema.</p>
+            </div>
+        </div>
+        <?php
+    }
+}
+
+/**
+ * Performance Diagnostic page
+ */
+function galleria_performance_diagnostic_page() {
+    ?>
+    <div class="wrap">
+        <h1>📊 Performance Diagnostic</h1>
+        
+        <div class="notice notice-info">
+            <p><strong>ℹ️ Informazioni:</strong> Questo strumento analizza le performance del sito e confronta i risultati tra ambiente locale e hosting.</p>
+        </div>
+        
+        <div style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px; margin: 20px 0;">
+            <h2>🔗 Accesso Diretto al Diagnostic</h2>
+            <p>Per accedere al diagnostic completo, utilizza questo link:</p>
+            
+            <div style="background: #f8f9fa; padding: 15px; border: 1px solid #e9ecef; border-radius: 4px; margin: 15px 0;">
+                <code><?php echo home_url(); ?>/wp-content/themes/galleria-catanzaro/performance-diagnostic.php?key=galleria_debug_2024</code>
+            </div>
+            
+            <p>
+                <a href="<?php echo home_url(); ?>/wp-content/themes/galleria-catanzaro/performance-diagnostic.php?key=galleria_debug_2024" target="_blank" class="button button-primary">
+                    🚀 Apri Performance Diagnostic
+                </a>
+            </p>
+            
+            <h3>📋 Utilizzo:</h3>
+            <ol>
+                <li><strong>Locale:</strong> Esegui il diagnostic sul tuo ambiente locale</li>
+                <li><strong>SiteGround:</strong> Esegui lo stesso diagnostic sul server SiteGround</li>
+                <li><strong>Confronta:</strong> Analizza le differenze per identificare i problemi</li>
+                <li><strong>Ottimizza:</strong> Implementa le raccomandazioni specifiche</li>
+            </ol>
+        </div>
+    </div>
+    <?php
+}
+
+/**
+ * Domain Fix page - Integrated in WordPress Admin
+ */
+function galleria_domain_fix_page() {
+    // Include domain fix functions
+    require_once(get_template_directory() . '/www-redirect-fix.php');
+    
+    // Extract domain info
+    $site_url = parse_url(home_url());
+    $domain = $site_url['host'];
+    $has_www = strpos($domain, 'www.') === 0;
+    $clean_domain = $has_www ? substr($domain, 4) : $domain;
+    
+    // Run checks
+    $dns_status = check_dns_status($clean_domain);
+    $domain_tests = test_domain_versions($clean_domain);
+    $wp_urls = check_wordpress_urls();
+    
+    ?>
+    <div class="wrap">
+        <h1>🔗 WWW Domain Fix</h1>
+        <p><strong>Current Site URL:</strong> <?php echo home_url(); ?></p>
+        <p><strong>Domain:</strong> <?php echo esc_html($domain); ?></p>
+        <p><strong>Generated:</strong> <?php echo date('Y-m-d H:i:s'); ?></p>
+
+        <h2>📊 Current Status Analysis</h2>
+        <div class="notice notice-info">
+            <?php if ($has_www): ?>
+                <p><strong>ℹ️ Your site is configured to use WWW</strong><br>
+                Main domain: <?php echo esc_html($domain); ?><br>
+                Alternative: <?php echo esc_html($clean_domain); ?></p>
+            <?php else: ?>
+                <p><strong>ℹ️ Your site is configured WITHOUT WWW</strong><br>
+                Main domain: <?php echo esc_html($domain); ?><br>
+                Alternative: www.<?php echo esc_html($domain); ?></p>
+            <?php endif; ?>
+        </div>
+
+        <h2>🌐 DNS Records Status</h2>
+        <div style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px; margin: 20px 0;">
+            <h3>A Records for <?php echo esc_html($clean_domain); ?></h3>
+            <?php if (!empty($dns_status['A_records'])): ?>
+                <table class="wp-list-table widefat fixed striped">
+                    <thead>
+                        <tr>
+                            <th>Host</th>
+                            <th>Type</th>
+                            <th>IP Address</th>
+                            <th>TTL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($dns_status['A_records'] as $record): ?>
+                        <tr>
+                            <td><?php echo esc_html($record['host']); ?></td>
+                            <td><?php echo esc_html($record['type']); ?></td>
+                            <td><?php echo esc_html($record['ip']); ?></td>
+                            <td><?php echo esc_html($record['ttl']); ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php else: ?>
+                <div class="notice notice-error">
+                    <p>❌ No A records found for <?php echo esc_html($clean_domain); ?></p>
+                </div>
+            <?php endif; ?>
+
+            <h3>Records for www.<?php echo esc_html($clean_domain); ?></h3>
+            <?php if (!empty($dns_status['WWW_records'])): ?>
+                <table class="wp-list-table widefat fixed striped">
+                    <thead>
+                        <tr>
+                            <th>Host</th>
+                            <th>Type</th>
+                            <th>IP Address</th>
+                            <th>TTL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($dns_status['WWW_records'] as $record): ?>
+                        <tr>
+                            <td><?php echo esc_html($record['host']); ?></td>
+                            <td><?php echo esc_html($record['type']); ?></td>
+                            <td><?php echo esc_html($record['ip']); ?></td>
+                            <td><?php echo esc_html($record['ttl']); ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php elseif (!empty($dns_status['CNAME_records'])): ?>
+                <table class="wp-list-table widefat fixed striped">
+                    <thead>
+                        <tr>
+                            <th>Host</th>
+                            <th>Type</th>
+                            <th>Target</th>
+                            <th>TTL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($dns_status['CNAME_records'] as $record): ?>
+                        <tr>
+                            <td><?php echo esc_html($record['host']); ?></td>
+                            <td><?php echo esc_html($record['type']); ?></td>
+                            <td><?php echo esc_html($record['target']); ?></td>
+                            <td><?php echo esc_html($record['ttl']); ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php else: ?>
+                <div class="notice notice-error">
+                    <p>❌ No records found for www.<?php echo esc_html($clean_domain); ?></p>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <h2>🔍 Domain Testing Results</h2>
+        <div style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px; margin: 20px 0;">
+            <h3>Test: <?php echo esc_html($clean_domain); ?> (without www)</h3>
+            <?php if ($domain_tests['non_www']['status'] === 'success'): ?>
+                <div class="notice notice-success">
+                    <p>✅ <strong>Status:</strong> <?php echo esc_html($domain_tests['non_www']['code']); ?><br>
+                    <?php if (isset($domain_tests['non_www']['headers']['location'])): ?>
+                        <strong>Redirects to:</strong> <?php echo esc_html($domain_tests['non_www']['headers']['location']); ?>
+                    <?php endif; ?></p>
+                </div>
+            <?php else: ?>
+                <div class="notice notice-error">
+                    <p>❌ <strong>Error:</strong> <?php echo esc_html($domain_tests['non_www']['message']); ?></p>
+                </div>
+            <?php endif; ?>
+
+            <h3>Test: www.<?php echo esc_html($clean_domain); ?> (with www)</h3>
+            <?php if ($domain_tests['www']['status'] === 'success'): ?>
+                <div class="notice notice-success">
+                    <p>✅ <strong>Status:</strong> <?php echo esc_html($domain_tests['www']['code']); ?><br>
+                    <?php if (isset($domain_tests['www']['headers']['location'])): ?>
+                        <strong>Redirects to:</strong> <?php echo esc_html($domain_tests['www']['headers']['location']); ?>
+                    <?php endif; ?></p>
+                </div>
+            <?php else: ?>
+                <div class="notice notice-error">
+                    <p>❌ <strong>Error:</strong> <?php echo esc_html($domain_tests['www']['message']); ?></p>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <h2>⚙️ WordPress URL Configuration</h2>
+        <div style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px; margin: 20px 0;">
+            <table class="wp-list-table widefat fixed striped">
+                <?php foreach ($wp_urls as $key => $url): ?>
+                <tr>
+                    <th><?php echo esc_html(str_replace('_', ' ', ucfirst($key))); ?></th>
+                    <td><?php echo esc_html($url); ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </table>
+        </div>
+
+        <h2>🔧 Solutions</h2>
+        
+        <div style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px; margin: 20px 0;">
+            <h3>1. Fix DNS Configuration (SiteGround cPanel)</h3>
+            <div class="notice notice-info">
+                <p><strong>Steps for SiteGround DNS:</strong></p>
+                <ol>
+                    <li>Login to SiteGround Client Area</li>
+                    <li>Go to <strong>Websites → Manage → Domain → DNS Zone Editor</strong></li>
+                    <li>Add missing records:</li>
+                </ol>
+            </div>
+            
+            <?php if (empty($dns_status['WWW_records']) && empty($dns_status['CNAME_records'])): ?>
+                <div class="notice notice-warning">
+                    <p><strong>⚠️ Missing WWW record!</strong> Add one of these records:</p>
+                    <ul>
+                        <li><strong>Option A (A Record):</strong> www → Same IP as main domain</li>
+                        <li><strong>Option B (CNAME):</strong> www → <?php echo esc_html($clean_domain); ?></li>
+                    </ul>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <div style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px; margin: 20px 0;">
+            <h3>2. Add .htaccess Redirect Rules</h3>
+            <div class="notice notice-info">
+                <p><strong>Choose your preferred version:</strong></p>
+            </div>
+            
+            <h4>Option A: Redirect WWW to Non-WWW (Recommended)</h4>
+            <textarea readonly style="width: 100%; height: 120px; font-family: monospace; background: #f8f9fa; padding: 10px; border: 1px solid #ddd;"><?php echo esc_textarea(generate_htaccess_rules('www_to_non_www')); ?></textarea>
+            
+            <h4>Option B: Redirect Non-WWW to WWW</h4>
+            <textarea readonly style="width: 100%; height: 120px; font-family: monospace; background: #f8f9fa; padding: 10px; border: 1px solid #ddd;"><?php echo esc_textarea(generate_htaccess_rules('non_www_to_www')); ?></textarea>
+
+            <div class="notice notice-warning">
+                <p><strong>⚠️ Instructions:</strong></p>
+                <ol>
+                    <li>Choose one option above (don't use both!)</li>
+                    <li>Add the rules to your <code>.htaccess</code> file in the root directory</li>
+                    <li>Place these rules BEFORE the WordPress rules</li>
+                    <li>Test both versions of your domain after implementation</li>
+                </ol>
+            </div>
+        </div>
+
+        <div style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px; margin: 20px 0;">
+            <h3>3. Update WordPress URLs (if needed)</h3>
+            <div class="notice notice-info">
+                <p><strong>If you want to change your preferred domain version:</strong></p>
+            </div>
+            
+            <?php if ($has_www): ?>
+                <p><strong>To switch to non-WWW:</strong></p>
+                <textarea readonly style="width: 100%; height: 80px; font-family: monospace; background: #f8f9fa; padding: 10px; border: 1px solid #ddd;">
+// Add to wp-config.php (before "require_once ABSPATH...")
+define('WP_HOME','https://<?php echo esc_html($clean_domain); ?>');
+define('WP_SITEURL','https://<?php echo esc_html($clean_domain); ?>');
+                </textarea>
+            <?php else: ?>
+                <p><strong>To switch to WWW:</strong></p>
+                <textarea readonly style="width: 100%; height: 80px; font-family: monospace; background: #f8f9fa; padding: 10px; border: 1px solid #ddd;">
+// Add to wp-config.php (before "require_once ABSPATH...")
+define('WP_HOME','https://www.<?php echo esc_html($clean_domain); ?>');
+define('WP_SITEURL','https://www.<?php echo esc_html($clean_domain); ?>');
+                </textarea>
+            <?php endif; ?>
+            
+            <div class="notice notice-warning">
+                <p><strong>⚠️ Alternative methods:</strong></p>
+                <ul>
+                    <li>WordPress Admin: Settings → General → WordPress Address URL / Site Address URL</li>
+                    <li>Database: Update <code>siteurl</code> and <code>home</code> in <code>wp_options</code> table</li>
+                    <li>WP-CLI: <code>wp option update home 'https://newdomain.com'</code></li>
+                </ul>
+            </div>
+        </div>
+
+        <h2>✅ Testing Checklist</h2>
+        <div style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px; margin: 20px 0;">
+            <div class="notice notice-info">
+                <p><strong>After implementing changes, test:</strong></p>
+                <ul>
+                    <li>✓ https://<?php echo esc_html($clean_domain); ?> → Should work and redirect if needed</li>
+                    <li>✓ https://www.<?php echo esc_html($clean_domain); ?> → Should work and redirect if needed</li>
+                    <li>✓ Check that only ONE version is canonical (no duplicates)</li>
+                    <li>✓ Verify SSL certificate covers both versions</li>
+                    <li>✓ Test from different devices and networks</li>
+                    <li>✓ Check Google Search Console for both versions</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="notice notice-error">
+            <p><strong>🚨 Important Notes:</strong></p>
+            <ul>
+                <li>DNS changes can take 24-48 hours to propagate globally</li>
+                <li>Always backup your .htaccess file before making changes</li>
+                <li>Test changes on staging environment first if possible</li>
+                <li>Contact SiteGround support if DNS issues persist</li>
+            </ul>
+        </div>
+    </div>
+    <?php
+}

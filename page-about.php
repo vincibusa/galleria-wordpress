@@ -25,110 +25,16 @@ get_header(); ?>
             <!-- About Content -->
             <section class="about-content py-16 bg-gray-50">
                 <div class="container">
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                        <!-- Main Content -->
-                        <div class="lg:col-span-2">
-                            <div class="prose prose-lg">
+                    <div class="grid grid-cols-1 gap-12">
+                        <!-- Main Content (multi-column on larger screens) -->
+                        <div>
+                            <div class="prose prose-lg about-columns">
                                 <?php the_content(); ?>
-                            </div>
-                        </div>
-                        
-                        <!-- Sidebar with Gallery Info -->
-                        <div class="about-sidebar">
-                            <div class="bg-white p-6 rounded-lg shadow-sm">
-                                <h3 class="text-xl font-light mb-4"><?php _e('Galleria Adalberto Catanzaro', 'galleria'); ?></h3>
-                                
-                                <div class="space-y-4">
-                                    <div class="info-item">
-                                        <strong><?php _e('Founded:', 'galleria'); ?></strong>
-                                        <span>2014</span>
-                                    </div>
-                                    
-                                    <div class="info-item">
-                                        <strong><?php _e('Founder:', 'galleria'); ?></strong>
-                                        <span>Adalberto Catanzaro</span>
-                                    </div>
-                                    
-                                    <div class="info-item">
-                                        <strong><?php _e('Focus:', 'galleria'); ?></strong>
-                                        <span><?php _e('Contemporary Art, Arte Povera, Transavanguardia', 'galleria'); ?></span>
-                                    </div>
-                                    
-                                    <div class="info-item">
-                                        <strong><?php _e('Locations:', 'galleria'); ?></strong>
-                                        <div class="mt-2 space-y-2">
-                                            <div class="text-sm">
-                                                <p>Via Montevergini 3</p>
-                                                <p class="text-gray-600">90133 Palermo</p>
-                                            </div>
-                                            <div class="text-sm">
-                                                <p>Corso Vittorio Emanuele 383</p>
-                                                <p class="text-gray-600">90133 Palermo</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="info-item">
-                                        <strong><?php _e('Opening Hours:', 'galleria'); ?></strong>
-                                        <span>Martedì–Sabato: 10:00–18:00</span>
-                                    </div>
-                                    
-                                    <div class="info-item">
-                                        <strong><?php _e('Contact:', 'galleria'); ?></strong>
-                                        <div class="mt-2 space-y-1">
-                                            <p>
-                                                <a href="tel:+393271677871" class="text-sm hover:underline">
-                                                    +39 327 167 7871
-                                                </a>
-                                            </p>
-                                            <p>
-                                                <a href="mailto:catanzaroepartners@gmail.com" class="text-sm hover:underline">
-                                                    catanzaroepartners@gmail.com
-                                                </a>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Gallery Statistics -->
-                            <div class="bg-white p-6 rounded-lg shadow-sm mt-6">
-                                <h3 class="text-xl font-light mb-4"><?php _e('Gallery in Numbers', 'galleria'); ?></h3>
-                                
-                                <div class="space-y-3">
-                                    <?php
-                                    // Get statistics
-                                    $artists_count = wp_count_posts('artist')->publish ?? 0;
-                                    $exhibitions_count = wp_count_posts('exhibition')->publish ?? 0;
-                                    $years_active = date('Y') - 2014;
-                                    ?>
-                                    
-                                    <div class="stat-item">
-                                        <span class="stat-number"><?php echo $years_active; ?>+</span>
-                                        <span class="stat-label"><?php _e('Years Active', 'galleria'); ?></span>
-                                    </div>
-                                    
-                                    <div class="stat-item">
-                                        <span class="stat-number"><?php echo $exhibitions_count; ?>+</span>
-                                        <span class="stat-label"><?php _e('Exhibitions', 'galleria'); ?></span>
-                                    </div>
-                                    
-                                    <div class="stat-item">
-                                        <span class="stat-number"><?php echo $artists_count; ?>+</span>
-                                        <span class="stat-label"><?php _e('Artists', 'galleria'); ?></span>
-                                    </div>
-                                    
-                                    <div class="stat-item">
-                                        <span class="stat-number">2</span>
-                                        <span class="stat-label"><?php _e('Locations', 'galleria'); ?></span>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
-
             <!-- Featured Artists/Exhibitions Section -->
             <section class="about-featured py-16">
                 <div class="container">
@@ -178,79 +84,32 @@ get_header(); ?>
 </main>
 
 <style>
-.about-page .prose {
-    max-width: none;
-}
+/* About page - multi-column content without sidebar */
+.about-page { color: #0f1724; }
+.about-hero .max-w-4xl { padding: 0 1rem; }
+.about-hero h1, .about-hero .text-4xl { font-size: clamp(2rem, 4.5vw, 3.25rem); line-height: 1.05; font-weight: 300; margin-bottom: 0.5rem; }
+.about-hero .text-xl { font-size: 1.125rem; color: #56606b; max-width: 54ch; margin: 0 auto; }
 
-.about-page .prose p {
-    margin-bottom: 1.5rem;
-    line-height: 1.7;
+/* Columnized main content: responsive columns */
+.about-page .prose { max-width: none; }
+.about-columns { column-gap: 2rem; column-fill: auto; }
+@media (min-width: 768px) {
+    .about-columns { -webkit-column-count: 2; column-count: 2; -webkit-column-width: 28rem; column-width: 28rem; }
 }
-
-.about-page .prose h2 {
-    margin-top: 2rem;
-    margin-bottom: 1rem;
-    font-weight: 300;
+@media (min-width: 1200px) {
+    .about-columns { -webkit-column-count: 3; column-count: 3; -webkit-column-width: 24rem; column-width: 24rem; }
 }
+.about-columns p, .about-columns ul, .about-columns ol { break-inside: avoid-column; -webkit-column-break-inside: avoid; margin-bottom: 1.25rem; line-height: 1.75; color: #24303a; font-size: 1.02rem; }
+.about-columns h2, .about-columns h3 { break-inside: avoid-column; }
+.about-columns img, .about-columns figure { break-inside: avoid-column; width: 100%; height: auto; display: block; margin: 0 0 1rem; }
 
-.about-page .prose h3 {
-    margin-top: 1.5rem;
-    margin-bottom: 0.75rem;
-    font-weight: 400;
-}
+/* Preview grid */
+.exhibition-preview { transition: transform .25s ease, box-shadow .25s ease; }
+.exhibition-preview:hover { transform: translateY(-6px); }
+.preview-image img { width: 100%; height: 220px; object-fit: cover; border-radius: 0.5rem; display: block; }
 
-.info-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.info-item strong {
-    font-size: 0.875rem;
-    color: #6b7280;
-    font-weight: 500;
-}
-
-.info-item span,
-.info-item div {
-    font-size: 0.875rem;
-    color: #111827;
-}
-
-.stat-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #f3f4f6;
-}
-
-.stat-item:last-child {
-    border-bottom: none;
-}
-
-.stat-number {
-    font-size: 1.25rem;
-    font-weight: 500;
-    color: #111827;
-}
-
-.stat-label {
-    font-size: 0.875rem;
-    color: #6b7280;
-}
-
-.preview-image img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 0.5rem;
-}
-
-@media (max-width: 1024px) {
-    .about-sidebar {
-        margin-top: 2rem;
-    }
+@media (max-width: 767px) {
+    .about-columns { -webkit-column-count: 1; column-count: 1; }
 }
 </style>
 

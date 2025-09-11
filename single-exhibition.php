@@ -105,9 +105,9 @@ get_header(); ?>
             <!-- Exhibition Details -->
             <section class="exhibition-details py-16">
                 <div class="container">
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                    <div class="grid grid-cols-1 gap-12">
                         <!-- Main Content -->
-                        <div class="exhibition-content lg:col-span-2">
+                        <div class="exhibition-content">
                             <?php if (get_the_content()) : ?>
                                 <div class="prose prose-lg">
                                     <?php the_content(); ?>
@@ -119,7 +119,7 @@ get_header(); ?>
                             <?php endif; ?>
                         </div>
                         
-                        <!-- Sidebar Info -->
+                        <!-- Sidebar Info (moved below description, left-aligned) -->
                         <div class="exhibition-sidebar">
                             <div class="sidebar-content space-y-8">
                                 <!-- Exhibition Info -->
@@ -267,8 +267,9 @@ get_header(); ?>
 <style>
 /* Hero Section */
 .hero-image {
-    height: 70vh;
-    min-height: 500px;
+    /* make hero responsive but with a reasonable maximum height */
+    height: min(70vh, 800px);
+    min-height: 360px;
     position: relative;
     overflow: hidden;
 }
@@ -288,32 +289,36 @@ get_header(); ?>
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    /* stronger and smoother gradient for better contrast */
+    background: linear-gradient(transparent, rgba(0,0,0,0.85));
     color: white;
-    padding: 3rem 0;
+    padding: 3.5rem 0;
 }
 
 .hero-meta {
     display: flex;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    font-size: 0.875rem;
-    opacity: 0.9;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    opacity: 0.95;
     flex-wrap: wrap;
+    align-items: center;
 }
 
 .hero-title {
-    font-size: 2.5rem;
+    font-size: clamp(1.75rem, 4vw, 3rem);
     font-weight: 300;
-    line-height: 1.2;
-    margin-bottom: 1rem;
+    line-height: 1.08;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.01em;
+    text-shadow: 0 6px 18px rgba(0,0,0,0.6);
 }
 
 .hero-artist {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
     font-weight: 300;
-    margin-bottom: 0.5rem;
-    opacity: 0.9;
+    margin-bottom: 0.4rem;
+    opacity: 0.95;
 }
 
 .hero-curator {
@@ -324,37 +329,42 @@ get_header(); ?>
 
 /* Sidebar */
 .exhibition-sidebar {
-    background: #f9fafb;
-    padding: 2rem;
-    border-radius: 0.5rem;
-    height: fit-content;
+    /* remove boxed/card look so details flow as part of the page */
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    height: auto;
+    border: none;
+    box-shadow: none;
 }
 
 .info-title {
     font-size: 1.125rem;
-    font-weight: 500;
+    font-weight: 600;
     color: #111827;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #eef2f6;
 }
 
 .info-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+    display: block;
+    padding: 0.35rem 0;
 }
 
 .info-item strong {
     font-size: 0.875rem;
     color: #6b7280;
-    font-weight: 500;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.25rem;
 }
 
 .info-item span,
 .info-item a {
-    font-size: 0.875rem;
+    font-size: 0.95rem;
     color: #111827;
+    display: block;
 }
 
 .info-item a:hover {
@@ -397,8 +407,48 @@ get_header(); ?>
 }
 
 .prose p {
-    margin-bottom: 1rem;
-    line-height: 1.7;
+    margin-bottom: 0.9rem;
+    line-height: 1.85;
+    color: #111827;
+    font-size: 1rem;
+}
+
+/* Ensure sidebar appears left-aligned under the main content */
+.exhibition-sidebar {
+    max-width: 360px;
+    margin-left: 0;
+    margin-top: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+    /* On larger screens, keep details under the content but aligned left with content width */
+    .exhibition-sidebar {
+        margin-left: 0;
+    }
+}
+
+/* Navigation tweaks */
+.exhibition-navigation .flex {
+    align-items: center;
+}
+
+.exhibition-navigation a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    color: #111827;
+    text-decoration: none;
+}
+
+.exhibition-navigation a:hover {
+    background: rgba(17,24,39,0.04);
+}
+
+.nav-previous a, .nav-next a {
+    border: 1px solid #e6e7eb;
 }
 
 /* Responsive */

@@ -52,14 +52,14 @@ assets/
 3. Installa e attiva Advanced Custom Fields Pro
 4. Esegui lo script di migrazione (vedi `MIGRATION_INSTRUCTIONS.md`)
 
-## Migrazione dal Next.js
+## Contenuti Predefiniti
 
-Il tema include uno script di migrazione completo (`migration-script.php`) che:
-- Importa tutti e 15 gli artisti
-- Importa tutte le 19 mostre storiche
-- Importa le 3 news attuali
-- Crea le pagine About e Contact con contenuto completo
-- Configura tutte le tassonomie e metadati
+Il tema include contenuti pre-popolati per:
+- 15 artisti contemporanei già configurati
+- 19 mostre storiche con metadati completi
+- 3 news di esempio
+- Pagine About e Contact con contenuto completo
+- Tassonomie e metadati configurati
 
 ## Funzionalità Homepage
 

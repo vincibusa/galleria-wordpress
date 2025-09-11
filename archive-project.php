@@ -14,15 +14,13 @@ get_header(); ?>
         </header>
 
         <?php
-        // Custom query: show ALL projects ordered chronologically by ACF start_date.
-        // Assumption: ACF `start_date` is stored in `YYYY-MM-DD` or `YYYYMMDD` format so string ordering works.
+        // Simplified query: show ALL projects without meta field requirements
         $args = array(
             'post_type' => 'project',
             'posts_per_page' => -1,
-            'meta_key' => 'start_date',
-            // order by start_date descending so newest projects appear first;
-            // keep post date DESC as secondary fallback
-            'orderby' => array( 'meta_value' => 'DESC', 'date' => 'DESC' ),
+            'post_status' => 'publish',
+            'orderby' => 'date',
+            'order' => 'DESC'
         );
 
         $projects = new WP_Query($args);
@@ -30,12 +28,13 @@ get_header(); ?>
         if ($projects->have_posts()) : ?>
             <div class="projects-grid grid grid-cols-1 md:grid-cols-3 gap-8">
                 <?php while ($projects->have_posts()) : $projects->the_post(); 
-                    $artist = get_field('artist');
-                    $curator = get_field('curator');
-                    $venue = get_field('venue');
-                    $location = get_field('location');
-                    $start_date = get_field('start_date');
-                    $end_date = get_field('end_date');
+                    // Use get_post_meta instead of get_field for better compatibility
+                    $artist = get_post_meta(get_the_ID(), 'artist', true);
+                    $curator = get_post_meta(get_the_ID(), 'curator', true);
+                    $venue = get_post_meta(get_the_ID(), 'venue', true);
+                    $location = get_post_meta(get_the_ID(), 'location', true);
+                    $start_date = get_post_meta(get_the_ID(), 'start_date', true);
+                    $end_date = get_post_meta(get_the_ID(), 'end_date', true);
                 ?>
                     <article id="post-<?php the_ID(); ?>" <?php post_class('project-card border-b border-gray-100 pb-8 last:border-b-0'); ?>>
                         <?php if (has_post_thumbnail()) : ?>
@@ -166,6 +165,19 @@ get_header(); ?>
 }
 
 .space-y-2 > * + * {
+    /* tightened to match exhibition spacing */
+    margin-top: 0.125rem;
+}
+
+/* Reset default margins for headings and paragraphs inside the spacing utility */
+.space-y-2 h2,
+.space-y-2 h3,
+.space-y-2 p {
+    margin: 10px;
+}
+
+/* Reduce top margin between thumbnail and text specifically for project cards */
+.project-card .mt-4 {
     margin-top: 0.5rem;
 }
 
@@ -232,6 +244,11 @@ get_header(); ?>
 /* Remove last border */
 .project-card:last-child {
     border-bottom: none;
+}
+
+.project-card h2 a,
+.project-card h3 a {
+    font-style: normal;
 }
 
 /* Responsive text alignment */

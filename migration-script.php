@@ -106,19 +106,6 @@ function get_nextjs_exhibitions_data() {
             'status' => 'past'
         ),
         array(
-            'title' => 'OSSI',
-            'artist' => 'CONCIALDI / SURDI',
-            'curator' => 'Valentino Catricalà',
-            'venue' => 'Villa Palagonia, Bagheria',
-            'location' => 'bagheria',
-            'start_date' => '2018-09-01',
-            'end_date' => '2018-10-31',
-            'description' => '',
-            'image' => 'FOTO ELENCHI/OSSI.jpg',
-            'featured' => false,
-            'status' => 'past'
-        ),
-        array(
             'title' => 'Primiiera',
             'artist' => 'Gilberto Zorio, Nunzio, Vittorio Messina, Eliseo Mattiacci',
             'curator' => 'Bruno Corà',
@@ -323,6 +310,27 @@ function get_nextjs_exhibitions_data() {
             'end_date' => '2014-06-30',
             'description' => '',
             'image' => 'FOTO ELENCHI/FERMO IMMAGINE.JPG',
+            'featured' => false,
+            'status' => 'past'
+        )
+    );
+}
+
+/**
+ * Project data from Next.js site
+ */
+function get_nextjs_projects_data() {
+    return array(
+        array(
+            'title' => 'OSSI',
+            'artist' => 'CONCIALDI / SURDI',
+            'curator' => 'Valentino Catricalà',
+            'venue' => 'Villa Palagonia, Bagheria',
+            'location' => 'bagheria',
+            'start_date' => '2018-09-01',
+            'end_date' => '2018-10-31',
+            'description' => '',
+            'image' => 'FOTO ELENCHI/OSSI.jpg',
             'featured' => false,
             'status' => 'past'
         )
@@ -560,6 +568,88 @@ function migrate_exhibitions() {
 }
 
 /**
+ * Migrate Projects to WordPress
+ */
+function migrate_projects() {
+    $projects = get_nextjs_projects_data();
+    $migrated = 0;
+    $errors = array();
+
+    foreach ($projects as $project_data) {
+        // Check if project already exists
+        $existing = get_posts(array(
+            'post_type' => 'project',
+            'title' => $project_data['title'],
+            'post_status' => 'publish',
+            'numberposts' => 1
+        ));
+        
+        if (!empty($existing)) {
+            echo '<p>⚠️ Project ' . $project_data['title'] . ' already exists, skipping...</p>';
+            continue; // Skip if already exists
+        }
+        
+        echo '<p>Creating project: ' . $project_data['title'] . '</p>';
+
+        // Create project post
+        $post_data = array(
+            'post_title' => $project_data['title'],
+            'post_content' => isset($project_data['description']) ? $project_data['description'] : '',
+            'post_status' => 'publish',
+            'post_type' => 'project',
+            'meta_input' => array(
+                'artist' => $project_data['artist'],
+                'location' => $project_data['location'],
+                'start_date' => $project_data['start_date'],
+                'end_date' => $project_data['end_date'],
+                'featured' => isset($project_data['featured']) ? $project_data['featured'] : false
+            )
+        );
+
+        // Add optional fields
+        if (isset($project_data['curator'])) {
+            $post_data['meta_input']['curator'] = $project_data['curator'];
+        }
+        
+        if (isset($project_data['venue'])) {
+            $post_data['meta_input']['venue'] = $project_data['venue'];
+        }
+        
+        if (isset($project_data['image'])) {
+            $post_data['meta_input']['image_path'] = $project_data['image'];
+        }
+
+        $post_id = wp_insert_post($post_data);
+
+        if (is_wp_error($post_id)) {
+            $errors[] = sprintf('Failed to create project %s: %s', $project_data['title'], $post_id->get_error_message());
+        } else {
+            $migrated++;
+            
+            // Import and set featured image
+            if (isset($project_data['image']) && $project_data['image']) {
+                $attachment_id = import_image_to_media_library($project_data['image'], $post_id, $project_data['title']);
+                if ($attachment_id) {
+                    set_post_thumbnail($post_id, $attachment_id);
+                }
+            }
+            
+            // Set project status taxonomy (reuse exhibition_status)
+            if (isset($project_data['status'])) {
+                wp_set_post_terms($post_id, array($project_data['status']), 'exhibition_status');
+            }
+            
+            // Set location taxonomy
+            if (isset($project_data['location'])) {
+                wp_set_post_terms($post_id, array($project_data['location']), 'location');
+            }
+        }
+    }
+
+    return array('migrated' => $migrated, 'errors' => $errors);
+}
+
+/**
  * Migrate News to WordPress
  */
 function migrate_news() {
@@ -733,6 +823,14 @@ function run_migration() {
     } else {
         echo '<p>✓ Exhibition post type is registered</p>';
     }
+    
+    // Check if project post type exists
+    if (!post_type_exists('project')) {
+        echo '<p style="color: red;">⚠️ Project post type not found! Make sure your theme functions.php is working.</p>';
+        return;
+    } else {
+        echo '<p>✓ Project post type is registered</p>';
+    }
 
     // Create default taxonomy terms
     echo '<h2>Creating Taxonomy Terms...</h2>';
@@ -775,6 +873,18 @@ function run_migration() {
     if (!empty($exhibition_result['errors'])) {
         echo '<p style="color: red;">Errors:</p>';
         foreach ($exhibition_result['errors'] as $error) {
+            echo '<p style="color: red;">- ' . $error . '</p>';
+        }
+    }
+
+    // Migrate projects
+    echo '<h2>Migrating Projects...</h2>';
+    $project_result = migrate_projects();
+    echo '<p>✓ Migrated ' . $project_result['migrated'] . ' projects</p>';
+    
+    if (!empty($project_result['errors'])) {
+        echo '<p style="color: red;">Errors:</p>';
+        foreach ($project_result['errors'] as $error) {
             echo '<p style="color: red;">- ' . $error . '</p>';
         }
     }

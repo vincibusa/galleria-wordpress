@@ -189,7 +189,7 @@ get_header(); ?>
 /* Hero Section Styles */
 .hero-section {
     position: relative;
-    height: 60vh;
+    height: 100vh;
     min-height: 400px;
     overflow: hidden;
 }

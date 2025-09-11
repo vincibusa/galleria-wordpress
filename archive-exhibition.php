@@ -166,6 +166,20 @@ get_header(); ?>
 }
 
 .space-y-2 > * + * {
+    /* reduced from 0.2rem to 0.125rem to tighten vertical spacing between exhibition text items */
+    margin-top: 0.125rem;
+}
+
+/* Reset default margins for headings and paragraphs inside the exhibition spacing utility
+   so browser defaults don't add extra gaps; keep controlled small gap via .space-y-2 */
+.space-y-2 h2,
+.space-y-2 h3,
+.space-y-2 p {
+    margin: 10px;
+}
+
+/* Reduce top margin between thumbnail and text specifically for exhibition cards */
+.exhibition-card .mt-4 {
     margin-top: 0.5rem;
 }
 
@@ -239,6 +253,12 @@ get_header(); ?>
     .md\:text-left {
         text-align: left;
     }
+}
+
+/* Ensure anchors inside headings using the 'italic' utility are not italicized */
+.exhibition-card h2 a,
+.exhibition-card h3 a {
+    font-style: normal;
 }
 </style>
 
