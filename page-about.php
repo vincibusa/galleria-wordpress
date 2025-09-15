@@ -9,18 +9,7 @@ get_header(); ?>
     <?php while (have_posts()) : the_post(); ?>
         <article id="post-<?php the_ID(); ?>" <?php post_class('about-page'); ?>>
             <!-- About Hero Section -->
-            <section class="about-hero" role="banner" aria-labelledby="about-title">
-                <div class="container">
-                    <div class="hero-container">
-                        <h1 id="about-title"><?php the_title(); ?></h1>
-                        <?php if (has_excerpt()) : ?>
-                            <div class="hero-subtitle">
-                                <?php the_excerpt(); ?>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </section>
+
 
             <!-- About Content -->
             <section class="about-content" role="region" aria-labelledby="about-content-title">
@@ -33,6 +22,20 @@ get_header(); ?>
                         </div>
                         <aside class="sidebar-content" role="complementary">
                             <!-- Space for additional content like quick facts, contact info, etc. -->
+                            <?php
+                            // Get the image ID from post meta (set by migration script)
+                            $image_id = get_post_meta(get_the_ID(), 'about_sidebar_image', true);
+
+                            if ($image_id) :
+                            ?>
+                                <div class="sidebar-image" style="margin-bottom: 2rem;">
+                                    <?php 
+                                    // Display the image using the ID
+                                    echo wp_get_attachment_image($image_id, 'large', false, array('style' => 'width: 100%; height: auto; border-radius: 4px;')); 
+                                    ?>
+                                </div>
+                            <?php endif; ?>
+
                             <?php if (function_exists('get_field')) : 
                                 $gallery_founded = get_field('gallery_founded');
                                 $gallery_focus = get_field('gallery_focus');

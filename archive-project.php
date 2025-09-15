@@ -7,10 +7,7 @@ get_header(); ?>
 
 <main id="main_content" class="main-content">
     <div class="container py-16">
-        <header class="archive-header">
-            <h1><?php _e('Projects', 'galleria'); ?></h1>
-            <p class="archive-description"><?php _e('Discover our artistic projects and cultural initiatives', 'galleria'); ?></p>
-        </header>
+
 
         <?php
         // Simplified query: show ALL projects without meta field requirements
@@ -38,11 +35,17 @@ get_header(); ?>
                     <article id="post-<?php the_ID(); ?>" <?php post_class('project-card border-b border-gray-100 pb-8 last:border-b-0'); ?>>
                         <?php if (has_post_thumbnail()) : ?>
                             <div class="relative aspect-video overflow-hidden bg-gray-100">
-                                <a href="<?php the_permalink(); ?>">
-                                    <?php the_post_thumbnail('full', array(
-                                        'alt' => get_the_title(),
+                                <a href="<?php the_permalink(); ?>" aria-label="<?php echo esc_attr(sprintf(__('View project: %s', 'galleria'), get_the_title())); ?>">
+                                    <?php 
+                                    $thumbnail_alt = get_the_title();
+                                    if ($artist) {
+                                        $thumbnail_alt = sprintf(__('%s by %s', 'galleria'), get_the_title(), $artist);
+                                    }
+                                    the_post_thumbnail('large', array(
+                                        'alt' => $thumbnail_alt,
                                         'class' => 'object-cover w-full h-full',
-                                        'loading' => 'lazy'
+                                        'loading' => 'lazy',
+                                        'sizes' => '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw'
                                     )); ?>
                                 </a>
                             </div>
@@ -87,7 +90,7 @@ get_header(); ?>
                             
                             <?php if ($curator) : ?>
                                 <p class="text-sm text-gray-600">
-                                    a cura di <?php echo esc_html($curator); ?>
+                                    <?php printf(__('a cura di %s', 'galleria'), esc_html($curator)); ?>
                                 </p>
                             <?php endif; ?>
                             

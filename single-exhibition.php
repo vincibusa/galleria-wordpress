@@ -175,17 +175,17 @@ get_header(); ?>
                                     <h3 class="info-title"><?php _e('Gallery Information', 'galleria'); ?></h3>
                                     <div class="info-content space-y-3">
                                         <div class="contact-info">
-                                            <p class="font-medium">Galleria Adalberto Catanzaro</p>
+                                            <p class="font-medium"><?php echo esc_html(get_theme_mod('galleria_name', 'Galleria Adalberto Catanzaro')); ?></p>
                                             
                                             <?php if ($location === 'palermo' || !$location) : ?>
                                                 <div class="address">
                                                     <p><?php echo esc_html(get_theme_mod('galleria_address_1', 'Via Montevergini 3')); ?></p>
-                                                    <p>Palermo</p>
+                                                    <p><?php echo esc_html(get_theme_mod('galleria_city', 'Palermo')); ?></p>
                                                 </div>
                                             <?php elseif ($location === 'bagheria') : ?>
                                                 <div class="address">
                                                     <p><?php echo esc_html(get_theme_mod('galleria_address_2', 'Corso Vittorio Emanuele 383')); ?></p>
-                                                    <p>Palermo</p>
+                                                    <p><?php echo esc_html(get_theme_mod('galleria_city', 'Palermo')); ?></p>
                                                 </div>
                                             <?php endif; ?>
                                             

@@ -9,16 +9,7 @@ get_header(); ?>
     <?php while (have_posts()) : the_post(); ?>
         <article id="post-<?php the_ID(); ?>" <?php post_class('contact-page'); ?>>
             <!-- Contact Hero Section -->
-            <section class="contact-hero">
-                <div class="container py-16">
-                    <div class="text-center mb-16">
-                        <h1><?php the_title(); ?></h1>
-                        <?php if (has_excerpt()) : ?>
-                            <p class="hero-subtitle"><?php the_excerpt(); ?></p>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </section>
+
 
             <!-- Contact Content -->
             <section class="contact-content">
@@ -206,9 +197,12 @@ get_header(); ?>
                             <div class="directions-card">
                                 <h3><?php _e('Come Raggiungerci', 'galleria'); ?></h3>
                                 <p>
-                                    <?php _e('La galleria è facilmente raggiungibile con i mezzi pubblici e si trova nel centro storico di Palermo.', 'galleria'); ?>
+                                    <?php echo esc_html(get_theme_mod('galleria_directions_text', __('La galleria è facilmente raggiungibile con i mezzi pubblici e si trova nel centro storico di Palermo.', 'galleria'))); ?>
                                 </p>
-                                <a href="https://maps.google.com/?q=Via+Montevergini+3,+Palermo" 
+                                <?php
+                                $map_query = urlencode(get_theme_mod('galleria_location_1_name', 'Via Montevergini 3') . ', ' . get_theme_mod('galleria_city', 'Palermo'));
+                                ?>
+                                <a href="https://maps.google.com/?q=<?php echo $map_query; ?>" 
                                    target="_blank" rel="noopener noreferrer"
                                    class="directions-link">
                                     <?php _e('Apri in Google Maps', 'galleria'); ?>
@@ -224,7 +218,7 @@ get_header(); ?>
                 <div class="container py-16">
                     <div class="text-center mb-16">
                         <h2><?php _e('Dove Trovarci', 'galleria'); ?></h2>
-                        <p class="hero-subtitle"><?php _e('La galleria è facilmente raggiungibile con i mezzi pubblici nel centro storico di Palermo', 'galleria'); ?></p>
+                        <p class="hero-subtitle"><?php echo esc_html(get_theme_mod('galleria_directions_text', __('La galleria è facilmente raggiungibile con i mezzi pubblici nel centro storico di Palermo', 'galleria'))); ?></p>
                     </div>
                     
                     <!-- Interactive Map -->
@@ -233,14 +227,14 @@ get_header(); ?>
                             <div>
                                 <div class="map-embed">
                                         <iframe 
-                                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3149.123!2d13.366!3d38.115!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzjCsDA2JzU0LjAiTiAxM8KwMjEnNTcuNiJF!5e0!3m2!1sit!2sit!4v1234567890" 
+                                            src="<?php echo esc_url(galleria_get_maps_embed_url()); ?>" 
                                             width="100%" 
                                             height="100%" 
                                             style="border:0;" 
                                             allowfullscreen="" 
                                             loading="lazy" 
                                             referrerpolicy="no-referrer-when-downgrade"
-                                            title="<?php _e('Mappa delle sedi della Galleria Adalberto Catanzaro', 'galleria'); ?>">
+                                            title="<?php printf(__('Mappa delle sedi della %s', 'galleria'), esc_attr(get_theme_mod('galleria_name', 'Galleria Adalberto Catanzaro'))); ?>">
                                         </iframe>
                                     </div>
                                 </div>

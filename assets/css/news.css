@@ -10,7 +10,7 @@
 /* News Header */
 .news-header {
     background: white;
-    padding: 2rem 0 3rem;
+
     text-align: center;
     border-bottom: 1px solid #e5e7eb;
 }
@@ -81,7 +81,7 @@
 
 /* News Content */
 .news-content {
-    padding: 3rem 0;
+
 }
 
 /* Results Info */
@@ -121,7 +121,7 @@
 .news-archive .card-meta {
     background: #f3f4f6;
     color: #6b7280;
-    padding: 0.25rem 0.75rem;
+
     border-radius: 15px;
     font-size: 0.75rem;
     font-weight: 600;
@@ -255,7 +255,7 @@
     }
     
     .news-content {
-        padding: 4rem 0;
+
     }
 }
 

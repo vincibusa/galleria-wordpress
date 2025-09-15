@@ -7,10 +7,6 @@ get_header(); ?>
 
 <main id="main_content" class="main-content">
     <div class="container py-16">
-        <header class="archive-header">
-            <h1><?php _e('Exhibitions', 'galleria'); ?></h1>
-            <p class="archive-description"><?php _e('Explore our current and past exhibitions featuring contemporary artists', 'galleria'); ?></p>
-        </header>
 
         <?php
         // Custom query: show ALL exhibitions ordered chronologically by ACF start_date.
@@ -92,7 +88,7 @@ get_header(); ?>
                             
                             <?php if ($curator) : ?>
                                 <p class="text-sm text-gray-600">
-                                    a cura di <?php echo esc_html($curator); ?>
+                                    <?php printf(__('a cura di %s', 'galleria'), esc_html($curator)); ?>
                                 </p>
                             <?php endif; ?>
                             

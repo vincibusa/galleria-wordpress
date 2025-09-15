@@ -22,9 +22,16 @@ get_header(); ?>
             <section class="project-hero">
                 <?php if (has_post_thumbnail()) : ?>
                     <div class="hero-image relative">
-                        <?php the_post_thumbnail('gallery-hero', array(
-                            'alt' => get_the_title(),
-                            'class' => 'w-full h-full object-cover'
+                        <?php 
+                        $hero_alt = get_the_title();
+                        if ($artist) {
+                            $hero_alt = sprintf(__('%s by %s', 'galleria'), get_the_title(), $artist);
+                        }
+                        the_post_thumbnail('gallery-hero', array(
+                            'alt' => $hero_alt,
+                            'class' => 'w-full h-full object-cover',
+                            'loading' => 'eager',
+                            'fetchpriority' => 'high'
                         )); ?>
                         
                         <!-- status badge removed -->
@@ -175,17 +182,17 @@ get_header(); ?>
                                     <h3 class="info-title"><?php _e('Gallery Information', 'galleria'); ?></h3>
                                     <div class="info-content space-y-3">
                                         <div class="contact-info">
-                                            <p class="font-medium">Galleria Adalberto Catanzaro</p>
+                                            <p class="font-medium"><?php echo esc_html(get_theme_mod('galleria_name', 'Galleria Adalberto Catanzaro')); ?></p>
                                             
                                             <?php if ($location === 'palermo' || !$location) : ?>
                                                 <div class="address">
                                                     <p><?php echo esc_html(get_theme_mod('galleria_address_1', 'Via Montevergini 3')); ?></p>
-                                                    <p>Palermo</p>
+                                                    <p><?php echo esc_html(get_theme_mod('galleria_city', 'Palermo')); ?></p>
                                                 </div>
                                             <?php elseif ($location === 'bagheria') : ?>
                                                 <div class="address">
                                                     <p><?php echo esc_html(get_theme_mod('galleria_address_2', 'Corso Vittorio Emanuele 383')); ?></p>
-                                                    <p>Palermo</p>
+                                                    <p><?php echo esc_html(get_theme_mod('galleria_city', 'Palermo')); ?></p>
                                                 </div>
                                             <?php endif; ?>
                                             
@@ -219,255 +226,49 @@ get_header(); ?>
             </section>
 
             <!-- Navigation -->
-            <section class="project-navigation py-8 border-t bg-gray-50">
+            <nav class="project-navigation" aria-label="<?php _e('Project Navigation', 'galleria'); ?>">
                 <div class="container">
-                    <div class="flex justify-between items-center">
-                        <?php
-                        $prev_post = get_previous_post(false, '', 'project');
-                        $next_post = get_next_post(false, '', 'project');
-                        ?>
-                        
+                    <div class="flex">
                         <div class="nav-previous">
-                            <?php if ($prev_post) : ?>
+                            <?php
+                            $prev_post = get_previous_post(false, '', 'project');
+                            if ($prev_post) : ?>
                                 <a href="<?php echo get_permalink($prev_post->ID); ?>" 
-                                   class="inline-flex items-center space-x-2 text-sm font-light hover:underline">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                   aria-label="<?php echo esc_attr(sprintf(__('Previous project: %s', 'galleria'), $prev_post->post_title)); ?>">
+                                    <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <polyline points="15,18 9,12 15,6"></polyline>
                                     </svg>
-                                    <span><?php echo esc_html($prev_post->post_title); ?></span>
+                                    <?php echo esc_html($prev_post->post_title); ?>
                                 </a>
                             <?php endif; ?>
                         </div>
                         
                         <div class="nav-back">
                             <a href="<?php echo get_post_type_archive_link('project'); ?>" 
-                               class="text-sm font-light hover:underline">
+                               aria-label="<?php _e('Back to all projects', 'galleria'); ?>">
                                 <?php _e('All Projects', 'galleria'); ?>
                             </a>
                         </div>
                         
                         <div class="nav-next">
-                            <?php if ($next_post) : ?>
+                            <?php
+                            $next_post = get_next_post(false, '', 'project');
+                            if ($next_post) : ?>
                                 <a href="<?php echo get_permalink($next_post->ID); ?>" 
-                                   class="inline-flex items-center space-x-2 text-sm font-light hover:underline">
-                                    <span><?php echo esc_html($next_post->post_title); ?></span>
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                   aria-label="<?php echo esc_attr(sprintf(__('Next project: %s', 'galleria'), $next_post->post_title)); ?>">
+                                    <?php echo esc_html($next_post->post_title); ?>
+                                    <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <polyline points="9,18 15,12 9,6"></polyline>
                                     </svg>
                                 </a>
                             <?php endif; ?>
                         </div>
                     </div>
                 </div>
-            </section>
+            </nav>
         </article>
     <?php endwhile; ?>
 </main>
 
-<style>
-/* Hero Section */
-.hero-image {
-    height: min(70vh, 800px);
-    min-height: 360px;
-    position: relative;
-    overflow: hidden;
-}
-
-.hero-image img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-
-.hero-content {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(transparent, rgba(0,0,0,0.85));
-    color: white;
-    padding: 3.5rem 0;
-}
-
-.hero-meta {
-    display: flex;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
-    font-size: 0.9rem;
-    opacity: 0.95;
-    flex-wrap: wrap;
-    align-items: center;
-}
-
-.hero-title {
-    font-size: clamp(1.75rem, 4vw, 3rem);
-    font-weight: 300;
-    line-height: 1.08;
-    margin-bottom: 0.5rem;
-    letter-spacing: -0.01em;
-    text-shadow: 0 6px 18px rgba(0,0,0,0.6);
-}
-
-.hero-artist {
-    font-size: 1.125rem;
-    font-weight: 300;
-    margin-bottom: 0.4rem;
-    opacity: 0.95;
-}
-
-.hero-curator {
-    font-size: 1rem;
-    opacity: 0.8;
-    font-style: italic;
-}
-
-/* Sidebar */
-.project-sidebar {
-    background: transparent;
-    padding: 0;
-    border-radius: 0;
-    height: auto;
-    border: none;
-    box-shadow: none;
-}
-
-.info-title {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #111827;
-    margin-bottom: 0.75rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid #eef2f6;
-}
-
-.info-item {
-    display: block;
-    padding: 0.35rem 0;
-}
-
-.info-item strong {
-    font-size: 0.875rem;
-    color: #6b7280;
-    font-weight: 600;
-    display: block;
-    margin-bottom: 0.25rem;
-}
-
-.info-item span,
-.info-item a {
-    font-size: 0.95rem;
-    color: #111827;
-    display: block;
-}
-
-.info-item a:hover {
-    color: #6b7280;
-}
-
-/* status styles removed */
-
-.contact-info .font-medium {
-    margin-bottom: 0.5rem;
-}
-
-.address {
-    margin-bottom: 1rem;
-    font-size: 0.875rem;
-    color: #6b7280;
-}
-
-.contact-details p {
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
-}
-
-.contact-details strong {
-    color: #6b7280;
-    margin-right: 0.25rem;
-}
-
-.contact-details a {
-    color: #111827;
-    text-decoration: none;
-}
-
-.contact-details a:hover {
-    color: #6b7280;
-}
-
-.prose {
-    max-width: none;
-}
-
-.prose p {
-    margin-bottom: 0.9rem;
-    line-height: 1.85;
-    color: #111827;
-    font-size: 1rem;
-}
-
-/* Sidebar alignment under content */
-.project-sidebar {
-    max-width: 360px;
-    margin-left: 0;
-    margin-top: 1.5rem;
-}
-
-/* Responsive */
-@media (max-width: 1024px) {
-    .project-sidebar {
-        margin-top: 2rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .hero-image {
-        height: 50vh;
-        min-height: 300px;
-    }
-    
-    .hero-content {
-        padding: 2rem 0;
-    }
-    
-    .hero-title {
-        font-size: 1.875rem;
-    }
-    
-    .hero-artist {
-        font-size: 1.125rem;
-    }
-    
-    .status-badge {
-        top: 1rem;
-        right: 1rem;
-        font-size: 0.75rem;
-        padding: 0.375rem 0.75rem;
-    }
-    
-    .project-sidebar {
-        padding: 1.5rem;
-    }
-    
-    .project-navigation .flex {
-        flex-direction: column;
-        gap: 1rem;
-        text-align: center;
-    }
-    
-    .nav-previous,
-    .nav-next {
-        order: 2;
-    }
-    
-    .nav-back {
-        order: 1;
-    }
-}
-</style>
 
 <?php get_footer(); ?>

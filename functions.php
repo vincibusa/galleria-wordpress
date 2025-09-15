@@ -120,6 +120,237 @@ function galleria_customize_register($wp_customize) {
         'section' => 'galleria_settings',
         'type' => 'text',
     ));
+
+    // Gallery Description
+    $wp_customize->add_setting('galleria_description', array(
+        'default' => 'Una galleria d\'arte contemporanea nel cuore di Palermo, dedicata alla promozione di artisti emergenti e affermati.',
+        'sanitize_callback' => 'sanitize_textarea_field',
+    ));
+
+    $wp_customize->add_control('galleria_description', array(
+        'label' => __('Descrizione Galleria', 'galleria'),
+        'section' => 'galleria_settings',
+        'type' => 'textarea',
+    ));
+
+    // Gallery Name
+    $wp_customize->add_setting('galleria_name', array(
+        'default' => 'Galleria Adalberto Catanzaro',
+        'sanitize_callback' => 'sanitize_text_field',
+    ));
+
+    $wp_customize->add_control('galleria_name', array(
+        'label' => __('Nome Galleria', 'galleria'),
+        'section' => 'galleria_settings',
+        'type' => 'text',
+    ));
+
+    // Location Names
+    $wp_customize->add_setting('galleria_location_1_name', array(
+        'default' => 'Via Montevergini 3',
+        'sanitize_callback' => 'sanitize_text_field',
+    ));
+
+    $wp_customize->add_control('galleria_location_1_name', array(
+        'label' => __('Nome Sede 1', 'galleria'),
+        'section' => 'galleria_settings',
+        'type' => 'text',
+    ));
+
+    $wp_customize->add_setting('galleria_location_2_name', array(
+        'default' => 'Corso Vittorio Emanuele 383',
+        'sanitize_callback' => 'sanitize_text_field',
+    ));
+
+    $wp_customize->add_control('galleria_location_2_name', array(
+        'label' => __('Nome Sede 2', 'galleria'),
+        'section' => 'galleria_settings',
+        'type' => 'text',
+    ));
+
+    // City Name
+    $wp_customize->add_setting('galleria_city', array(
+        'default' => 'Palermo',
+        'sanitize_callback' => 'sanitize_text_field',
+    ));
+
+    $wp_customize->add_control('galleria_city', array(
+        'label' => __('Città', 'galleria'),
+        'section' => 'galleria_settings',
+        'type' => 'text',
+    ));
+
+    // Second location hours
+    $wp_customize->add_setting('galleria_hours_2', array(
+        'default' => 'Martedì–Sabato: 10:00–18:00',
+        'sanitize_callback' => 'sanitize_text_field',
+    ));
+
+    $wp_customize->add_control('galleria_hours_2', array(
+        'label' => __('Orari Sede 2', 'galleria'),
+        'section' => 'galleria_settings',
+        'type' => 'text',
+    ));
+
+    // Social Media Section
+    $wp_customize->add_section('galleria_social', array(
+        'title' => __('Social Media', 'galleria'),
+        'priority' => 36,
+    ));
+
+    // Facebook URL
+    $wp_customize->add_setting('galleria_facebook', array(
+        'default' => '',
+        'sanitize_callback' => 'esc_url_raw',
+    ));
+
+    $wp_customize->add_control('galleria_facebook', array(
+        'label' => __('URL Facebook', 'galleria'),
+        'section' => 'galleria_social',
+        'type' => 'url',
+    ));
+
+    // Instagram URL
+    $wp_customize->add_setting('galleria_instagram', array(
+        'default' => '',
+        'sanitize_callback' => 'esc_url_raw',
+    ));
+
+    $wp_customize->add_control('galleria_instagram', array(
+        'label' => __('URL Instagram', 'galleria'),
+        'section' => 'galleria_social',
+        'type' => 'url',
+    ));
+
+    // Twitter URL
+    $wp_customize->add_setting('galleria_twitter', array(
+        'default' => '',
+        'sanitize_callback' => 'esc_url_raw',
+    ));
+
+    $wp_customize->add_control('galleria_twitter', array(
+        'label' => __('URL Twitter', 'galleria'),
+        'section' => 'galleria_social',
+        'type' => 'url',
+    ));
+
+    // LinkedIn URL
+    $wp_customize->add_setting('galleria_linkedin', array(
+        'default' => '',
+        'sanitize_callback' => 'esc_url_raw',
+    ));
+
+    $wp_customize->add_control('galleria_linkedin', array(
+        'label' => __('URL LinkedIn', 'galleria'),
+        'section' => 'galleria_social',
+        'type' => 'url',
+    ));
+
+    // Archive Descriptions Section
+    $wp_customize->add_section('galleria_archive_descriptions', array(
+        'title' => __('Descrizioni Archivi', 'galleria'),
+        'priority' => 37,
+    ));
+
+    // Exhibition Archive Description
+    $wp_customize->add_setting('galleria_exhibition_archive_description', array(
+        'default' => 'Esplora le nostre mostre attuali e passate con artisti contemporanei',
+        'sanitize_callback' => 'sanitize_textarea_field',
+    ));
+
+    $wp_customize->add_control('galleria_exhibition_archive_description', array(
+        'label' => __('Descrizione Archivio Mostre', 'galleria'),
+        'section' => 'galleria_archive_descriptions',
+        'type' => 'textarea',
+    ));
+
+    // Project Archive Description
+    $wp_customize->add_setting('galleria_project_archive_description', array(
+        'default' => 'Scopri i nostri progetti artistici e le iniziative culturali',
+        'sanitize_callback' => 'sanitize_textarea_field',
+    ));
+
+    $wp_customize->add_control('galleria_project_archive_description', array(
+        'label' => __('Descrizione Archivio Progetti', 'galleria'),
+        'section' => 'galleria_archive_descriptions',
+        'type' => 'textarea',
+    ));
+
+    // Maps & Contact Section
+    $wp_customize->add_section('galleria_maps', array(
+        'title' => __('Mappe e Contatti', 'galleria'),
+        'priority' => 38,
+    ));
+
+    // Directions Text
+    $wp_customize->add_setting('galleria_directions_text', array(
+        'default' => 'La galleria è facilmente raggiungibile con i mezzi pubblici e si trova nel centro storico di Palermo.',
+        'sanitize_callback' => 'sanitize_textarea_field',
+    ));
+
+    $wp_customize->add_control('galleria_directions_text', array(
+        'label' => __('Testo Indicazioni', 'galleria'),
+        'section' => 'galleria_maps',
+        'type' => 'textarea',
+    ));
+
+    // Google Maps Coordinates Location 1
+    $wp_customize->add_setting('galleria_map_lat_1', array(
+        'default' => '38.1157',
+        'sanitize_callback' => 'sanitize_text_field',
+    ));
+
+    $wp_customize->add_control('galleria_map_lat_1', array(
+        'label' => __('Latitudine Sede 1', 'galleria'),
+        'section' => 'galleria_maps',
+        'type' => 'text',
+    ));
+
+    $wp_customize->add_setting('galleria_map_lng_1', array(
+        'default' => '13.3613',
+        'sanitize_callback' => 'sanitize_text_field',
+    ));
+
+    $wp_customize->add_control('galleria_map_lng_1', array(
+        'label' => __('Longitudine Sede 1', 'galleria'),
+        'section' => 'galleria_maps',
+        'type' => 'text',
+    ));
+
+    // Google Maps Coordinates Location 2
+    $wp_customize->add_setting('galleria_map_lat_2', array(
+        'default' => '38.1157',
+        'sanitize_callback' => 'sanitize_text_field',
+    ));
+
+    $wp_customize->add_control('galleria_map_lat_2', array(
+        'label' => __('Latitudine Sede 2', 'galleria'),
+        'section' => 'galleria_maps',
+        'type' => 'text',
+    ));
+
+    $wp_customize->add_setting('galleria_map_lng_2', array(
+        'default' => '13.3613',
+        'sanitize_callback' => 'sanitize_text_field',
+    ));
+
+    $wp_customize->add_control('galleria_map_lng_2', array(
+        'label' => __('Longitudine Sede 2', 'galleria'),
+        'section' => 'galleria_maps',
+        'type' => 'text',
+    ));
+
+    // Mobile Navigation Description
+    $wp_customize->add_setting('galleria_mobile_nav_description', array(
+        'default' => 'Navigate through our gallery sections',
+        'sanitize_callback' => 'sanitize_text_field',
+    ));
+
+    $wp_customize->add_control('galleria_mobile_nav_description', array(
+        'label' => __('Descrizione Navigazione Mobile', 'galleria'),
+        'section' => 'galleria_settings',
+        'type' => 'text',
+    ));
 }
 
 /**
@@ -1397,6 +1628,38 @@ function galleria_get_cart_count() {
 }
 add_action('wp_ajax_galleria_get_cart_count', 'galleria_get_cart_count');
 add_action('wp_ajax_nopriv_galleria_get_cart_count', 'galleria_get_cart_count');
+
+/**
+ * Generate Google Maps embed URL from customizer settings
+ */
+function galleria_get_maps_embed_url() {
+    $lat_1 = get_theme_mod('galleria_map_lat_1', '38.1157');
+    $lng_1 = get_theme_mod('galleria_map_lng_1', '13.3613');
+    $location_name = get_theme_mod('galleria_location_1_name', 'Via Montevergini 3');
+    $city = get_theme_mod('galleria_city', 'Palermo');
+    
+    // Create the embed URL with the coordinates
+    $embed_url = sprintf(
+        'https://www.google.com/maps/embed/v1/place?key=%s&q=%s,%s&center=%s,%s&zoom=16',
+        '', // Add your Google Maps API key here if needed
+        urlencode($location_name),
+        urlencode($city),
+        $lat_1,
+        $lng_1
+    );
+    
+    // Fallback to simple embed if no API key
+    if (empty($api_key)) {
+        $embed_url = sprintf(
+            'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3149.123!2d%s!3d%s!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%%3A0x0!2z%s!5e0!3m2!1sit!2sit!4v1234567890',
+            $lng_1,
+            $lat_1,
+            base64_encode($lat_1 . '°' . $lng_1 . '°')
+        );
+    }
+    
+    return $embed_url;
+}
 
 /**
  * Handle contact form submission

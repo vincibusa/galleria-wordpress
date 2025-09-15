@@ -121,7 +121,7 @@
         <div class="mobile-nav-content">
             <div class="mobile-nav-header">
                 <h2 class="mobile-nav-title" id="mobile-nav-title"><?php _e('Menu', 'galleria'); ?></h2>
-                <p class="mobile-nav-description"><?php _e('Navigate through our gallery sections', 'galleria'); ?></p>
+                <p class="mobile-nav-description"><?php echo esc_html(get_theme_mod('galleria_mobile_nav_description', __('Navigate through our gallery sections', 'galleria'))); ?></p>
                 <button class="mobile-nav-close" aria-label="<?php _e('Chiudi menu', 'galleria'); ?>">
                     <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <line x1="18" y1="6" x2="6" y2="18"></line>

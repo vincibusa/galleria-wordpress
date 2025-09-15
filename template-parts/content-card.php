@@ -35,7 +35,6 @@
     <?php endif; ?>
     
     <div class="card-content">
-        <div class="space-y-2">
             <?php 
             // Display category or post type
             if (get_post_type() === 'post') {
@@ -90,6 +89,5 @@
                     ?>
                 </div>
             <?php endif; ?>
-        </div>
     </div>
 </article>

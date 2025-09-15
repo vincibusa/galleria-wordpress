@@ -118,19 +118,7 @@ function get_nextjs_exhibitions_data() {
             'featured' => true,
             'status' => 'past'
         ),
-        array(
-            'title' => 'Le opere per Gibellina',
-            'artist' => 'Mario Schifano',
-            'curator' => 'Marco Meneguzzo',
-            'venue' => 'Villa Cattolica, Bagheria',
-            'location' => 'bagheria',
-            'start_date' => '2017-07-01',
-            'end_date' => '2017-10-31',
-            'description' => '',
-            'image' => 'FOTO ELENCHI/schifano.jpeg',
-            'featured' => false,
-            'status' => 'past'
-        ),
+
         array(
             'title' => 'Lettura di un\'onda',
             'artist' => 'Micol Assaël',
@@ -333,7 +321,33 @@ function get_nextjs_projects_data() {
             'image' => 'FOTO ELENCHI/OSSI.jpg',
             'featured' => false,
             'status' => 'past'
-        )
+        ),
+                array(
+            'title' => 'Le opere per Gibellina',
+            'artist' => 'Mario Schifano',
+            'curator' => 'Marco Meneguzzo',
+            'venue' => 'Villa Cattolica, Bagheria',
+            'location' => 'bagheria',
+            'start_date' => '2017-07-01',
+            'end_date' => '2017-10-31',
+            'description' => '',
+            'image' => 'FOTO ELENCHI/schifano.jpeg',
+            'featured' => false,
+            'status' => 'past'
+        ),
+                        array(
+            'title' => 'Un ovale marmo perlato su panorama',
+            'artist' => 'Turi Simeti',
+            'curator' => '',
+            'venue' => 'Belvedere di Alcamo',
+            'location' => 'Alcamo',
+            'start_date' => '2019-11-01',
+            'end_date' => '2019-11-30',
+            'description' => '',
+            'image' => 'FOTO ELENCHI/simeti.jpeg',
+            'featured' => false,
+            'status' => 'past'
+        ),
     );
 }
 
@@ -792,6 +806,48 @@ function create_default_pages() {
 }
 
 /**
+ * Set the sidebar image for the About page
+ */
+function set_about_page_image() {
+    // First, ensure the user has created the manual ACF field
+    if (!function_exists('get_field_object')) {
+        echo '<p style="color: red;">⚠️ ACF is not active. Cannot set About page image.</p>';
+        return;
+    }
+
+    // Get the About page by its slug
+    $about_page = get_page_by_path('about');
+
+    if (!$about_page) {
+        echo '<p style="color: orange;">⚠️ About page not found, skipping image assignment.</p>';
+        return;
+    }
+
+    $image_path = 'about23.jpeg'; // The image provided by the user
+    $field_name = 'about_sidebar_image';
+
+    // Check if the field already has a value
+    $existing_image = get_field($field_name, $about_page->ID);
+    if ($existing_image) {
+        echo '<p>✓ Sidebar image for About page is already set. Skipping.</p>';
+        return;
+    }
+
+    echo '<p>Setting sidebar image for About page...</p>';
+
+    // Import the image to the media library
+    $attachment_id = import_image_to_media_library($image_path, $about_page->ID, 'About Page Sidebar Image');
+
+    if ($attachment_id && !is_wp_error($attachment_id)) {
+        // Update the ACF image field with the attachment ID
+        update_field($field_name, $attachment_id, $about_page->ID);
+        echo '<p style="color: green;">✓ Successfully set sidebar image for the About page.</p>';
+    } else {
+        echo '<p style="color: red;">❌ Failed to import or attach the sidebar image for the About page.</p>';
+    }
+}
+
+/**
  * Run migration
  */
 function run_migration() {
@@ -905,6 +961,10 @@ function run_migration() {
     echo '<h2>Creating Default Pages...</h2>';
     create_default_pages();
     echo '<p>✓ Default pages created</p>';
+
+    // Set the about page image
+    echo '<h2>Setting About Page Image...</h2>';
+    set_about_page_image();
 
     echo '<h2>Migration Complete!</h2>';
     echo '<p>The migration has been completed successfully. Images have been imported to the WordPress Media Library and set as featured images. You can now:</p>';
