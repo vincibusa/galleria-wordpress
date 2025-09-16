@@ -3,7 +3,7 @@
         <div class="footer-content">
             <!-- About Section -->
             <div class="footer-section footer-about">
-                <h3><?php _e('Adalberto Catanzaro Arte Contemporanea', 'galleria'); ?></h3>
+                <h3><?php _e('Galleria Adalberto Catanzaro', 'galleria'); ?></h3>
                 <p class="footer-description">
                     <?php echo esc_html(get_theme_mod('galleria_description', __('Una galleria  nel cuore di Palermo, dedicata alla promozione e alla valorizzazione dell\'arte contemporanea.', 'galleria'))); ?>
                 </p>

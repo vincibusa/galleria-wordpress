@@ -8,6 +8,46 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// Ottimizzazioni per hosting SiteGround
+// Previeni timeout durante il caricamento delle funzioni
+if (!defined('WP_MEMORY_LIMIT')) {
+    define('WP_MEMORY_LIMIT', '512M');
+}
+
+// Gestione errori per hosting condiviso
+if (!function_exists('galleria_error_handler')) {
+    function galleria_error_handler($errno, $errstr, $errfile, $errline) {
+        if (!(error_reporting() & $errno)) {
+            return false;
+        }
+        
+        // Log solo errori critici per evitare sovraccarico
+        if ($errno === E_ERROR || $errno === E_CORE_ERROR || $errno === E_COMPILE_ERROR) {
+            error_log("Galleria Theme Error [$errno]: $errstr in $errfile on line $errline");
+        }
+        
+        return true;
+    }
+    set_error_handler('galleria_error_handler');
+}
+
+// Cache per funzioni costose
+if (!function_exists('galleria_get_cached_option')) {
+    function galleria_get_cached_option($option_name, $default = false) {
+        $cache_key = 'galleria_option_' . $option_name;
+        $cached_value = wp_cache_get($cache_key);
+        
+        if ($cached_value === false) {
+            $cached_value = get_option($option_name, $default);
+            wp_cache_set($cache_key, $cached_value, '', 300); // Cache per 5 minuti
+        }
+        
+        return $cached_value;
+    }
+}
+
+// Includi ottimizzazioni per hosting
+require_once get_template_directory() . '/inc/hosting-optimization.php';
 
 /**
  * Theme Customizer
@@ -1170,7 +1210,13 @@ function galleria_smtp_test_email() {
     }
     exit;
 }
-add_action('admin_init', 'galleria_smtp_test_email');
+// Lazy loading per funzioni admin - carica solo quando necessario
+if (is_admin()) {
+    add_action('admin_init', 'galleria_smtp_test_email');
+} else {
+    // Per il frontend, carica solo se richiesto
+    add_action('wp_ajax_galleria_smtp_test_email', 'galleria_smtp_test_email');
+}
 
 /**
  * Add SMTP Settings menu to WordPress admin
@@ -1184,7 +1230,10 @@ function galleria_smtp_admin_menu() {
         'galleria_smtp_settings_page'
     );
 }
-add_action('admin_menu', 'galleria_smtp_admin_menu');
+// Carica menu admin solo quando necessario
+if (is_admin() && current_user_can('manage_options')) {
+    add_action('admin_menu', 'galleria_smtp_admin_menu');
+}
 
 /**
  * Admin notice for SMTP configuration
@@ -1235,7 +1284,10 @@ function galleria_smtp_admin_notice() {
         delete_transient('galleria_smtp_error');
     }
 }
-add_action('admin_notices', 'galleria_smtp_admin_notice');
+// Notice admin solo per amministratori
+if (is_admin() && current_user_can('manage_options')) {
+    add_action('admin_notices', 'galleria_smtp_admin_notice');
+}
 
 /**
  * Add SMTP test link to admin bar (for administrators)
@@ -1261,7 +1313,10 @@ function galleria_smtp_admin_bar($wp_admin_bar) {
         )
     ));
 }
-add_action('admin_bar_menu', 'galleria_smtp_admin_bar', 999);
+// Admin bar solo per amministratori
+if (is_admin() && current_user_can('manage_options')) {
+    add_action('admin_bar_menu', 'galleria_smtp_admin_bar', 999);
+}
 
 /**
  * Handle SMTP Settings form submissions (before any output)
