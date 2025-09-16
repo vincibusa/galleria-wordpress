@@ -69,15 +69,15 @@
 }
 
 .logo-image {
-    height: 40px;
-    width: auto;
+    width: 250px !important;
+    height: auto;
     object-fit: contain;
     transition: transform 0.3s ease;
 }
 
 @media (min-width: 768px) {
     .logo-image {
-        height: 48px;
+        width: 350px !important;
     }
     
     .site-logo a {
