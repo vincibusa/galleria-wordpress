@@ -1,60 +1,106 @@
- <?php
+<?php
 /**
  * Galleria Adalberto Catanzaro Theme Functions
+ *
+ * Main theme functions file following WordPress coding standards.
+ *
+ * @package    Galleria_Catanzaro
+ * @author     Custom Development
+ * @copyright  2025 Galleria Adalberto Catanzaro
+ * @license    GPL-2.0+
+ * @version    1.0.0
  */
+
+declare(strict_types=1);
 
 // Security: Exit if accessed directly
 if (!defined('ABSPATH')) {
-    exit;
+	exit;
 }
 
 // Ottimizzazioni per hosting SiteGround
 // Previeni timeout durante il caricamento delle funzioni
 if (!defined('WP_MEMORY_LIMIT')) {
-    define('WP_MEMORY_LIMIT', '512M');
+	define('WP_MEMORY_LIMIT', '512M');
 }
 
-// Gestione errori per hosting condiviso
-if (!function_exists('galleria_error_handler')) {
-    function galleria_error_handler($errno, $errstr, $errfile, $errline) {
-        if (!(error_reporting() & $errno)) {
-            return false;
-        }
-        
-        // Log solo errori critici per evitare sovraccarico
-        if ($errno === E_ERROR || $errno === E_CORE_ERROR || $errno === E_COMPILE_ERROR) {
-            error_log("Galleria Theme Error [$errno]: $errstr in $errfile on line $errline");
-        }
-        
-        return true;
-    }
-    set_error_handler('galleria_error_handler');
-}
+/**
+ * Custom error handler for the theme
+ *
+ * Logs critical errors to avoid overloading the error log on shared hosting.
+ *
+ * @param int    $errno   Error level.
+ * @param string $errstr  Error message.
+ * @param string $errfile File where error occurred.
+ * @param int    $errline Line number where error occurred.
+ *
+ * @return bool Returns true to prevent PHP's internal error handler from running.
+ */
+function galleria_error_handler(int $errno, string $errstr, string $errfile, int $errline): bool {
+	if (!(error_reporting() & $errno)) {
+		return false;
+	}
 
-// Cache per funzioni costose
-if (!function_exists('galleria_get_cached_option')) {
-    function galleria_get_cached_option($option_name, $default = false) {
-        $cache_key = 'galleria_option_' . $option_name;
-        $cached_value = wp_cache_get($cache_key);
-        
-        if ($cached_value === false) {
-            $cached_value = get_option($option_name, $default);
-            wp_cache_set($cache_key, $cached_value, '', 300); // Cache per 5 minuti
-        }
-        
-        return $cached_value;
-    }
+	try {
+		// Log solo errori critici per evitare sovraccarico
+		if (in_array($errno, [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR], true)) {
+			error_log(sprintf(
+				'Galleria Theme Error [%d]: %s in %s on line %d',
+				$errno,
+				$errstr,
+				$errfile,
+				$errline
+			));
+		}
+	} catch (Exception $e) {
+		// Fallback: se il logging fallisce, non bloccare l'esecuzione
+		error_log('Error handler failed: ' . $e->getMessage());
+	}
+
+	return true;
+}
+set_error_handler('galleria_error_handler');
+
+/**
+ * Get cached option value
+ *
+ * Retrieves an option from cache or database with caching for performance.
+ *
+ * @param string $option_name The name of the option to retrieve.
+ * @param mixed  $default     Default value to return if option doesn't exist.
+ *
+ * @return mixed The option value or default.
+ */
+function galleria_get_cached_option(string $option_name, $default = false) {
+	$cache_key = 'galleria_option_' . $option_name;
+	$cached_value = wp_cache_get($cache_key);
+
+	if (false === $cached_value) {
+		try {
+			$cached_value = get_option($option_name, $default);
+			wp_cache_set($cache_key, $cached_value, '', 300); // Cache per 5 minuti
+		} catch (Exception $e) {
+			error_log('Failed to get cached option: ' . $e->getMessage());
+			return $default;
+		}
+	}
+
+	return $cached_value;
 }
 
 // Includi ottimizzazioni per hosting
 require_once get_template_directory() . '/inc/hosting-optimization.php';
 
 /**
- * Theme Customizer
+ * Register theme customizer settings
+ *
+ * Registers all customizer sections, settings, and controls for the theme.
+ *
+ * @param WP_Customize_Manager $wp_customize WordPress Customizer object.
+ *
+ * @return void
  */
-add_action('customize_register', 'galleria_customize_register');
-
-function galleria_customize_register($wp_customize) {
+function galleria_customize_register(WP_Customize_Manager $wp_customize): void {
     // Add Hero Section
     $wp_customize->add_section('galleria_hero', array(
         'title' => __('Hero Section', 'galleria'),
@@ -428,8 +474,13 @@ add_action('after_setup_theme', 'galleria_theme_setup');
 
 /**
  * Enqueue scripts and styles
+ *
+ * Loads all necessary CSS and JavaScript files for the theme.
+ * Uses conditional loading for page-specific styles.
+ *
+ * @return void
  */
-function galleria_scripts() {
+function galleria_scripts(): void {
     // Enqueue styles
     wp_enqueue_style('google-fonts', 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap', array(), null);
     wp_enqueue_style('galleria-style', get_stylesheet_uri(), array(), wp_get_theme()->get('Version'));
@@ -456,10 +507,15 @@ function galleria_scripts() {
         }
     }
     
-    // Exhibition single page CSS
-    if (is_singular('exhibition')) {
-        wp_enqueue_style('galleria-exhibition-single', get_template_directory_uri() . '/assets/css/exhibition-single.css', array('galleria-style'), wp_get_theme()->get('Version'));
-    }
+	// Exhibition single page CSS
+	if (is_singular('exhibition')) {
+		wp_enqueue_style('galleria-exhibition-single', get_template_directory_uri() . '/assets/css/exhibition-single.css', array('galleria-style'), wp_get_theme()->get('Version'));
+	}
+
+	// Artist single page CSS
+	if (is_singular('artist')) {
+		wp_enqueue_style('galleria-artist-single', get_template_directory_uri() . '/assets/css/artist-single.css', array('galleria-style'), wp_get_theme()->get('Version'));
+	}
     
     // Project single page CSS
     if (is_singular('project')) {

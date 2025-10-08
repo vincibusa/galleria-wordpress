@@ -1,7 +1,19 @@
 <?php
 /**
  * Single Artist Template
+ *
+ * Template for displaying individual artist pages.
+ *
+ * @package    Galleria_Catanzaro
+ * @version    1.0.0
  */
+
+declare(strict_types=1);
+
+// Security: Exit if accessed directly
+if (!defined('ABSPATH')) {
+	exit;
+}
 
 get_header(); ?>
 
@@ -220,92 +232,4 @@ get_header(); ?>
     <?php endwhile; ?>
 </main>
 
-<style>
-.artist-single .placeholder-image {
-    min-height: 400px;
-}
-
-.exhibitions-timeline {
-    space-y: 2rem;
-}
-
-.exhibition-item {
-    padding: 1.5rem;
-    background: white;
-    border-radius: 0.5rem;
-    border-left: 4px solid #e5e7eb;
-    transition: all 0.3s ease;
-}
-
-.exhibition-item:hover {
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-}
-
-.exhibition-item.current {
-    border-left-color: #22c55e;
-}
-
-.exhibition-item.past {
-    border-left-color: #6b7280;
-}
-
-.exhibition-date .date-range {
-    font-size: 1.125rem;
-    font-weight: 500;
-    color: #374151;
-}
-
-.exhibition-title {
-    font-size: 1.125rem;
-    margin-bottom: 0.25rem;
-}
-
-.exhibition-title a {
-    color: #111827;
-}
-
-.curator {
-    margin-bottom: 0.25rem;
-}
-
-.venue {
-    margin-bottom: 0.5rem;
-}
-
-.prose {
-    max-width: none;
-}
-
-.prose p {
-    margin-bottom: 1rem;
-    line-height: 1.7;
-}
-
-.artist-navigation {
-    background: #f9fafb;
-}
-
-@media (max-width: 768px) {
-    .artist-hero .grid {
-        grid-template-columns: 1fr;
-        text-align: center;
-    }
-    
-    .artist-navigation .flex {
-        flex-direction: column;
-        gap: 1rem;
-        text-align: center;
-    }
-    
-    .nav-previous,
-    .nav-next {
-        order: 2;
-    }
-    
-    .nav-back {
-        order: 1;
-    }
-}
-</style>
-
-<?php get_footer(); ?>
+<?php get_footer();
