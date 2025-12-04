@@ -91,6 +91,12 @@ function galleria_get_cached_option(string $option_name, $default = false) {
 // Includi ottimizzazioni per hosting
 require_once get_template_directory() . '/inc/hosting-optimization.php';
 
+// Includi sezioni Customizer
+require_once get_template_directory() . '/inc/customizer-colors.php';
+require_once get_template_directory() . '/inc/customizer-typography.php';
+require_once get_template_directory() . '/inc/customizer-layout.php';
+require_once get_template_directory() . '/inc/dynamic-styles.php';
+
 /**
  * Register theme customizer settings
  *
@@ -105,16 +111,33 @@ function galleria_customize_register(WP_Customize_Manager $wp_customize): void {
     $wp_customize->add_section('galleria_hero', array(
         'title' => __('Hero Section', 'galleria'),
         'priority' => 30,
+        'description' => __('Personalizza l\'immagine e il contenuto della sezione hero sulla homepage.', 'galleria'),
+    ));
+    
+    // Show Hero Section
+    $wp_customize->add_setting('galleria_hero_show', array(
+        'default' => true,
+        'sanitize_callback' => 'wp_validate_boolean',
+        'transport' => 'refresh',
+    ));
+    
+    $wp_customize->add_control('galleria_hero_show', array(
+        'label' => __('Mostra Hero Section', 'galleria'),
+        'description' => __('Attiva o disattiva la visualizzazione della sezione hero sulla homepage.', 'galleria'),
+        'section' => 'galleria_hero',
+        'type' => 'checkbox',
     ));
     
     // Hero Image
     $wp_customize->add_setting('galleria_hero_image', array(
         'default' => '',
         'sanitize_callback' => 'esc_url_raw',
+        'transport' => 'refresh',
     ));
     
     $wp_customize->add_control(new WP_Customize_Image_Control($wp_customize, 'galleria_hero_image', array(
-        'label' => __('Hero Image', 'galleria'),
+        'label' => __('Immagine Hero', 'galleria'),
+        'description' => __('Carica un\'immagine per la sezione hero. Dimensioni consigliate: 1920x800px o superiore.', 'galleria'),
         'section' => 'galleria_hero',
         'settings' => 'galleria_hero_image',
     )));
@@ -123,11 +146,13 @@ function galleria_customize_register(WP_Customize_Manager $wp_customize): void {
     $wp_customize->add_setting('galleria_hero_title', array(
         'default' => get_bloginfo('name'),
         'sanitize_callback' => 'sanitize_text_field',
+        'transport' => 'postMessage',
     ));
     
     $wp_customize->add_control('galleria_hero_title', array(
         'type' => 'text',
-        'label' => __('Hero Title', 'galleria'),
+        'label' => __('Titolo Hero', 'galleria'),
+        'description' => __('Titolo principale della sezione hero. Lascia vuoto per usare il nome del sito.', 'galleria'),
         'section' => 'galleria_hero',
     ));
     
@@ -135,12 +160,84 @@ function galleria_customize_register(WP_Customize_Manager $wp_customize): void {
     $wp_customize->add_setting('galleria_hero_subtitle', array(
         'default' => get_bloginfo('description'),
         'sanitize_callback' => 'sanitize_text_field',
+        'transport' => 'postMessage',
     ));
     
     $wp_customize->add_control('galleria_hero_subtitle', array(
         'type' => 'text',
-        'label' => __('Hero Subtitle', 'galleria'),
+        'label' => __('Sottotitolo Hero', 'galleria'),
+        'description' => __('Sottotitolo della sezione hero. Lascia vuoto per usare la descrizione del sito.', 'galleria'),
         'section' => 'galleria_hero',
+    ));
+    
+    // Hero Artist
+    $wp_customize->add_setting('galleria_hero_artist', array(
+        'default' => '',
+        'sanitize_callback' => 'sanitize_text_field',
+        'transport' => 'postMessage',
+    ));
+
+    $wp_customize->add_control('galleria_hero_artist', array(
+        'label' => __('Artista', 'galleria'),
+        'description' => __('Nome dell\'artista da mostrare nella hero section.', 'galleria'),
+        'section' => 'galleria_hero',
+        'type' => 'text',
+    ));
+
+    // Hero Location
+    $wp_customize->add_setting('galleria_hero_location', array(
+        'default' => '',
+        'sanitize_callback' => 'sanitize_text_field',
+        'transport' => 'postMessage',
+    ));
+
+    $wp_customize->add_control('galleria_hero_location', array(
+        'label' => __('Luogo', 'galleria'),
+        'description' => __('Luogo della mostra o evento.', 'galleria'),
+        'section' => 'galleria_hero',
+        'type' => 'text',
+    ));
+
+    // Hero Dates
+    $wp_customize->add_setting('galleria_hero_dates', array(
+        'default' => '',
+        'sanitize_callback' => 'sanitize_text_field',
+        'transport' => 'postMessage',
+    ));
+
+    $wp_customize->add_control('galleria_hero_dates', array(
+        'label' => __('Date', 'galleria'),
+        'description' => __('Date della mostra o evento (es: "15 novembre 2025 – 10 gennaio 2026").', 'galleria'),
+        'section' => 'galleria_hero',
+        'type' => 'text',
+    ));
+
+    // Hero Button Text
+    $wp_customize->add_setting('galleria_hero_button_text', array(
+        'default' => __('Scopri di più', 'galleria'),
+        'sanitize_callback' => 'sanitize_text_field',
+        'transport' => 'postMessage',
+    ));
+
+    $wp_customize->add_control('galleria_hero_button_text', array(
+        'label' => __('Testo Pulsante', 'galleria'),
+        'description' => __('Testo del pulsante nella hero section.', 'galleria'),
+        'section' => 'galleria_hero',
+        'type' => 'text',
+    ));
+
+    // Hero Button Link
+    $wp_customize->add_setting('galleria_hero_button_link', array(
+        'default' => '#news-events-title',
+        'sanitize_callback' => 'esc_url_raw',
+        'transport' => 'postMessage',
+    ));
+
+    $wp_customize->add_control('galleria_hero_button_link', array(
+        'label' => __('Link Pulsante', 'galleria'),
+        'description' => __('URL di destinazione del pulsante (lascia vuoto per scrollare alla sezione news).', 'galleria'),
+        'section' => 'galleria_hero',
+        'type' => 'url',
     ));
 
     // Gallery Settings Section
@@ -437,7 +534,67 @@ function galleria_customize_register(WP_Customize_Manager $wp_customize): void {
         'section' => 'galleria_settings',
         'type' => 'text',
     ));
+
+    // Homepage Settings Section
+    $wp_customize->add_section('galleria_homepage', array(
+        'title' => __('Impostazioni Homepage', 'galleria'),
+        'priority' => 40,
+    ));
+
+    // Show News Section
+    $wp_customize->add_setting('galleria_homepage_show_news', array(
+        'default' => true,
+        'sanitize_callback' => 'wp_validate_boolean',
+        'transport' => 'refresh',
+    ));
+
+    $wp_customize->add_control('galleria_homepage_show_news', array(
+        'label' => __('Mostra Sezione News', 'galleria'),
+        'description' => __('Mostra la sezione News & Events sulla homepage.', 'galleria'),
+        'section' => 'galleria_homepage',
+        'type' => 'checkbox',
+    ));
+
+    // News Posts Count
+    $wp_customize->add_setting('galleria_homepage_news_count', array(
+        'default' => 6,
+        'sanitize_callback' => 'absint',
+        'transport' => 'refresh',
+    ));
+
+    $wp_customize->add_control('galleria_homepage_news_count', array(
+        'label' => __('Numero Post News', 'galleria'),
+        'description' => __('Numero di post news da mostrare sulla homepage.', 'galleria'),
+        'section' => 'galleria_homepage',
+        'type' => 'number',
+        'input_attrs' => array(
+            'min' => 3,
+            'max' => 12,
+            'step' => 1,
+        ),
+    ));
+
+    // News Columns Desktop
+    $wp_customize->add_setting('galleria_homepage_news_columns', array(
+        'default' => '3',
+        'sanitize_callback' => 'sanitize_text_field',
+        'transport' => 'postMessage',
+    ));
+
+    $wp_customize->add_control('galleria_homepage_news_columns', array(
+        'label' => __('Colonne News Desktop', 'galleria'),
+        'description' => __('Numero di colonne per la griglia news su desktop.', 'galleria'),
+        'section' => 'galleria_homepage',
+        'type' => 'select',
+        'choices' => array(
+            '1' => '1 Colonna',
+            '2' => '2 Colonne',
+            '3' => '3 Colonne',
+            '4' => '4 Colonne',
+        ),
+    ));
 }
+add_action('customize_register', 'galleria_customize_register');
 
 /**
  * Theme setup
@@ -480,9 +637,55 @@ add_action('after_setup_theme', 'galleria_theme_setup');
  *
  * @return void
  */
+/**
+ * Enqueue Google Fonts dynamically based on Customizer selection
+ *
+ * @return void
+ */
+function galleria_enqueue_google_fonts(): void {
+	$font_family = get_theme_mod('galleria_font_family', 'Inter');
+	
+	// Ensure function exists (in case customizer-typography.php hasn't loaded yet)
+	if (!function_exists('galleria_get_google_fonts')) {
+		// Fallback to Inter font
+		wp_enqueue_style(
+			'galleria-google-fonts',
+			'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap',
+			array(),
+			null
+		);
+		return;
+	}
+	
+	$google_fonts = galleria_get_google_fonts();
+
+	// Only enqueue if it's a Google Font (not system fonts)
+	if (isset($google_fonts[$font_family])) {
+		$font = $google_fonts[$font_family];
+		$font_name_encoded = str_replace(' ', '+', $font['name']);
+		$weights = implode(';', $font['weights']);
+		$font_url = 'https://fonts.googleapis.com/css2?family=' . $font_name_encoded . ':wght@' . $weights . '&display=swap';
+		
+		wp_enqueue_style(
+			'galleria-google-fonts',
+			$font_url,
+			array(),
+			null
+		);
+	} elseif ($font_family === 'Inter') {
+		// Default Inter font
+		wp_enqueue_style(
+			'galleria-google-fonts',
+			'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap',
+			array(),
+			null
+		);
+	}
+}
+
 function galleria_scripts(): void {
-    // Enqueue styles
-    wp_enqueue_style('google-fonts', 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap', array(), null);
+    // Enqueue Google Fonts dynamically
+    galleria_enqueue_google_fonts();
     wp_enqueue_style('galleria-style', get_stylesheet_uri(), array(), wp_get_theme()->get('Version'));
     wp_enqueue_style('galleria-header-footer', get_template_directory_uri() . '/assets/css/header-footer.css', array('galleria-style'), wp_get_theme()->get('Version'));
     wp_enqueue_style('galleria-components', get_template_directory_uri() . '/assets/css/components.css', array('galleria-style'), wp_get_theme()->get('Version'));
@@ -490,6 +693,8 @@ function galleria_scripts(): void {
     // Homepage specific styles
     if (is_front_page()) {
         wp_enqueue_style('galleria-homepage', get_template_directory_uri() . '/assets/css/homepage.css', array('galleria-style'), wp_get_theme()->get('Version'));
+        // Hero section styles - loaded last with highest priority
+        wp_enqueue_style('galleria-hero-section', get_template_directory_uri() . '/assets/css/hero-section.css', array('galleria-homepage', 'galleria-style'), wp_get_theme()->get('Version') . '.3');
     }
     
     // Archive/Index specific styles
