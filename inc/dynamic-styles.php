@@ -78,6 +78,7 @@ function galleria_generate_dynamic_css(): string {
 	$css .= '  --galleria-footer-columns: ' . esc_attr(get_theme_mod('galleria_footer_columns', '3')) . ";\n";
 	$css .= '  --galleria-section-spacing: ' . esc_attr(get_theme_mod('galleria_section_spacing', '5rem')) . ";\n";
 	$css .= '  --galleria-card-gap: ' . esc_attr(get_theme_mod('galleria_card_gap', '2rem')) . ";\n";
+	$css .= '  --hero-padding: ' . esc_attr(get_theme_mod('galleria_hero_padding', '4rem')) . ";\n";
 
 	$css .= '}' . "\n\n";
 

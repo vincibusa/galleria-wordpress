@@ -178,3 +178,4 @@ add_action('customize_register', 'galleria_customizer_layout');
 
 
 
+

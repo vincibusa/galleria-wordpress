@@ -19,114 +19,98 @@ get_header();
 ?>
 
 <main id="main_content" class="main-content" role="main" aria-label="<?php esc_attr_e('Contenuto principale', 'galleria'); ?>">
-	<!-- Hero Section - Carosello Esibizioni -->
+	<!-- Hero Section - Carosello Personalizzato -->
+	<?php if (get_theme_mod('galleria_hero_show', true)) : ?>
 	<?php
-	// Query per le 3 esibizioni più recenti
-	$exhibitions_query = new WP_Query(array(
-		'post_type' => 'exhibition',
-		'posts_per_page' => 3,
-		'orderby' => 'date',
-		'order' => 'DESC',
-		'post_status' => 'publish'
-	));
-
-	if ($exhibitions_query->have_posts()) :
+	// Conta quante slide hanno almeno un'immagine
+	$slides_count = 0;
+	for ($i = 1; $i <= 3; $i++) {
+		if (get_theme_mod('galleria_hero_slide' . $i . '_image', '')) {
+			$slides_count++;
+		}
+	}
+	
+	if ($slides_count > 0) :
 	?>
-	<section class="hero-section" role="banner" aria-label="<?php esc_attr_e('Carosello esibizioni', 'galleria'); ?>">
+	<section class="hero-section" role="banner" aria-label="<?php esc_attr_e('Carosello hero', 'galleria'); ?>">
 		<div id="carousel-slides" class="hero-wrapper">
 			<?php
-			$slide_index = 0;
-			while ($exhibitions_query->have_posts()) :
-				$exhibitions_query->the_post();
-				$slide_index++;
-				$is_active = ($slide_index === 1) ? 'active' : '';
+			for ($i = 1; $i <= 3; $i++) {
+				$image = get_theme_mod('galleria_hero_slide' . $i . '_image', '');
+				$title = get_theme_mod('galleria_hero_slide' . $i . '_title', '');
+				$artist = get_theme_mod('galleria_hero_slide' . $i . '_artist', '');
+				$location = get_theme_mod('galleria_hero_slide' . $i . '_location', '');
+				$dates = get_theme_mod('galleria_hero_slide' . $i . '_dates', '');
 				
-				// Recupera campi ACF
-				$artist = get_field('artist');
-				$location = get_field('location');
-				$start_date = get_field('start_date');
-				$end_date = get_field('end_date');
-				
-				// Formatta location
-				$location_formatted = '';
-				if ($location) {
-					$location_formatted = ucfirst($location);
+				// Salta slide senza immagine
+				if (empty($image)) {
+					continue;
 				}
 				
-				// Formatta date
-				$dates_formatted = '';
-				if ($start_date && $end_date) {
-					$start_formatted = date_i18n('d.m.Y', strtotime($start_date));
-					$end_formatted = date_i18n('d.m.Y', strtotime($end_date));
-					$dates_formatted = $start_formatted . ' – ' . $end_formatted;
-				}
-				
-				// Combina location e date
-				$info_parts = array();
-				if ($location_formatted) {
-					$info_parts[] = strtoupper($location_formatted);
-				}
-				if ($dates_formatted) {
-					$info_parts[] = strtoupper($dates_formatted);
-				}
+				$is_active = ($i === 1) ? 'active' : '';
+				$slide_index = $i - 1;
 			?>
-				<div class="carousel-slide <?php echo esc_attr($is_active); ?>">
-					<div class="hero-text-panel">
-						<div class="hero-content">
-							<?php if ($artist) : ?>
-								<div class="hero-artist">
-									<?php echo esc_html($artist); ?>
-								</div>
+				<div class="carousel-slide <?php echo esc_attr($is_active); ?>" data-slide-index="<?php echo esc_attr($slide_index); ?>">
+					<!-- Main Content: Title and Image -->
+					<div class="slide-main-content">
+						<div class="slide-text-column">
+							<?php if ($title) : ?>
+								<h1 class="hero-title"><span class="highlight"><?php echo esc_html($title); ?></span></h1>
 							<?php endif; ?>
-
-							<?php if (get_the_title()) : ?>
-								<h1 class="hero-title"><?php the_title(); ?></h1>
-							<?php endif; ?>
-
-							<?php if (!empty($info_parts)) : ?>
-								<div class="hero-info">
-									<?php echo esc_html(implode(' / ', $info_parts)); ?>
-								</div>
-							<?php endif; ?>
+						</div>
+						<div class="slide-image-column">
+							<img src="<?php echo esc_url($image); ?>" 
+								 alt="<?php echo esc_attr($title ? $title : sprintf(__('Slide %d', 'galleria'), $i)); ?>" 
+								 class="hero-image">
 						</div>
 					</div>
 
-					<div class="hero-image-panel">
-						<?php if (has_post_thumbnail()) : ?>
-							<?php
-							the_post_thumbnail('full', array(
-								'alt' => esc_attr(get_the_title()),
-								'class' => 'hero-image'
-							));
-							?>
-						<?php else : ?>
-							<div class="hero-image-placeholder">
-								<span><?php esc_html_e('Nessuna immagine', 'galleria'); ?></span>
+					<!-- Meta Footer: Artist, Date, Location -->
+					<div class="slide-meta-footer">
+						<div class="meta-column">
+							<span class="meta-label"><?php esc_html_e('ARTISTA', 'galleria'); ?></span>
+							<span class="meta-value"><?php echo esc_html($artist ? $artist : '-'); ?></span>
+						</div>
+						<div class="meta-column">
+							<span class="meta-label"><?php esc_html_e('DATA', 'galleria'); ?></span>
+							<span class="meta-value"><?php echo esc_html($dates ? $dates : '-'); ?></span>
+						</div>
+						<div class="meta-column">
+							<span class="meta-label"><?php esc_html_e('LOCATION', 'galleria'); ?></span>
+							<div class="meta-value-group">
+								<span class="meta-value"><?php echo esc_html($location ? $location : '-'); ?></span>
 							</div>
-						<?php endif; ?>
+						</div>
 					</div>
 				</div>
 			<?php
-			endwhile;
-			wp_reset_postdata();
+			}
 			?>
 		</div>
 		
-		<?php if ($exhibitions_query->post_count > 1) : ?>
+		<?php if ($slides_count > 1) : ?>
 			<!-- Indicatori Dots -->
 			<div class="carousel-dots-container">
-				<?php for ($i = 0; $i < $exhibitions_query->post_count; $i++) : ?>
-					<button class="carousel-dot <?php echo ($i === 0) ? 'active' : ''; ?>" 
-							data-slide="<?php echo esc_attr($i); ?>"
-							aria-label="<?php echo esc_attr(sprintf(__('Vai alla slide %d', 'galleria'), $i + 1)); ?>">
+				<?php 
+				$dot_index = 0;
+				for ($i = 1; $i <= 3; $i++) {
+					if (get_theme_mod('galleria_hero_slide' . $i . '_image', '')) :
+				?>
+					<button class="carousel-dot <?php echo ($dot_index === 0) ? 'active' : ''; ?>" 
+							data-slide="<?php echo esc_attr($dot_index); ?>"
+							aria-label="<?php echo esc_attr(sprintf(__('Vai alla slide %d', 'galleria'), $dot_index + 1)); ?>">
 					</button>
-				<?php endfor; ?>
+				<?php
+						$dot_index++;
+					endif;
+				}
+				?>
 			</div>
 		<?php endif; ?>
 	</section>
 	<?php
 	endif;
-	wp_reset_postdata();
+	endif;
 	?>
 
 	<div class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
@@ -179,67 +163,6 @@ get_header();
 			<?php endif; ?>
 		</section>
 		<?php endif; ?>
-
-		<!-- Publications Section (commented out for now like in original) -->
-		<!-- 
-		<section class="publications">
-			<h2 class="text-2xl font-light mb-8"><?php esc_html_e('Publications', 'galleria'); ?></h2>
-			
-			<?php
-			$publications = new WP_Query(array(
-				'post_type'      => 'publication',
-				'posts_per_page' => 3,
-				'orderby'        => 'date',
-				'order'          => 'DESC'
-			));
-			
-			if ($publications->have_posts()) :
-			?>
-				<div class="grid grid-cols-1 md-grid-cols-2 lg-grid-cols-3">
-					<?php
-					while ($publications->have_posts()) :
-						$publications->the_post();
-						$buy_link = get_field('buy_link');
-					?>
-						<article class="card">
-							<?php if (has_post_thumbnail()) : ?>
-								<div class="card-image">
-									<?php the_post_thumbnail('gallery-card', array('alt' => get_the_title())); ?>
-								</div>
-							<?php endif; ?>
-							
-							<div class="card-content">
-								<div class="space-y-4">
-									<div>
-										<span class="card-meta"><?php esc_html_e('Publications', 'galleria'); ?></span>
-										<h3 class="card-title"><strong><?php the_title(); ?></strong></h3>
-										
-										<?php if (get_the_excerpt()) : ?>
-											<div class="card-description">
-												<?php the_excerpt(); ?>
-											</div>
-										<?php endif; ?>
-									</div>
-									
-									<?php if ($buy_link) : ?>
-										<a href="<?php echo esc_url($buy_link); ?>" 
-										   target="_blank" 
-										   rel="noopener noreferrer"
-										   class="inline-block text-sm font-light hover:underline">
-											<?php esc_html_e('Buy now', 'galleria'); ?>
-										</a>
-									<?php endif; ?>
-								</div>
-							</div>
-						</article>
-					<?php
-					endwhile;
-					wp_reset_postdata();
-					?>
-				</div>
-			<?php endif; ?>
-		</section>
-		-->
 	</div>
 </main>
 
